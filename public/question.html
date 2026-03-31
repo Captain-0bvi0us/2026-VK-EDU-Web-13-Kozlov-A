@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Как построить лунный парк? — CupOfQ</title>
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/css/cupofq.css">
+</head>
+<body>
+  <div class="site-wrap">
+    <header class="site-header sticky-top">
+      <nav class="navbar navbar-expand-lg py-3">
+        <div class="container">
+          <a class="navbar-brand" href="index.html">Cup<span>Of</span>Q</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="mainNav">
+            <form class="search-wrap position-relative my-2 my-lg-0 ms-lg-4 flex-grow-1 flex-lg-grow-0" role="search" action="index.html" method="get">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <label class="visually-hidden" for="q-search">Поиск</label>
+              <input id="q-search" class="form-control" type="search" name="q" placeholder="Поиск по вопросам…" aria-label="Поиск">
+            </form>
+            <a class="btn btn-ask ms-lg-3 my-2 my-lg-0" href="ask.html">Задать вопрос</a>
+            <div class="user-block ms-lg-3 mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
+              <a class="nav-link d-inline p-0 small" href="login.html">Войти</a>
+              <span class="text-muted">·</span>
+              <a class="nav-link d-inline p-0 small" href="signup.html">Регистрация</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main">
+      <div class="container py-4">
+        <div class="row g-4">
+          <div class="col-lg-8 order-2 order-lg-1">
+            <article class="question-card mb-4">
+              <div class="row g-3">
+                <div class="col-auto d-flex flex-column align-items-center gap-2">
+                  <img src="static/img/avatar-placeholder.svg" class="rounded-3" width="56" height="56" alt="">
+                  <div class="vote-box" role="group" aria-label="Голосование за вопрос">
+                    <button type="button" class="btn-vote btn-vote-up" aria-label="Лайк">▲</button>
+                    <span class="score">5</span>
+                    <button type="button" class="btn-vote btn-vote-down" aria-label="Дизлайк">▼</button>
+                  </div>
+                </div>
+                <div class="col">
+                  <h1 class="h4 page-title mb-2">Как построить лунный парк?</h1>
+                  <p class="mb-2">Ребят, не могу разобраться с лунным парком. Накидайте вариантов. С чего начать?</p>
+                  <div class="question-meta mb-2">
+                    <span>Спросил <strong>Гость</strong></span>
+                    <span>·</span>
+                    <time datetime="2026-03-03T14:20">3 марта 2026, 14:20</time>
+                  </div>
+                  <div>
+                    <a href="tag.html" class="badge text-bg-light border text-decoration-none">блэкджек</a>
+                    <a href="tag.html" class="badge text-bg-light border text-decoration-none">bender</a>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <h2 class="h5 page-title mb-3">Ответы</h2>
+
+            <article class="question-card mb-3">
+              <div class="row g-3">
+                <div class="col-auto d-flex flex-column align-items-center gap-2">
+                  <img src="static/img/avatar-placeholder.svg" class="rounded-3" width="48" height="48" alt="">
+                  <div class="vote-box is-up" role="group" aria-label="Голосование за ответ">
+                    <button type="button" class="btn-vote btn-vote-up" aria-pressed="true" aria-label="Лайк">▲</button>
+                    <span class="score">5</span>
+                    <button type="button" class="btn-vote btn-vote-down" aria-pressed="false" aria-label="Дизлайк">▼</button>
+                  </div>
+                </div>
+                <div class="col">
+                  <p class="mb-2">Прежде всего спасибо за вопрос. Начнем с полета на луну, затем проеткирование паркка и его постройка</p>
+                  <div class="answer-meta mb-2">
+                    <span>Ответил <strong>Мистер Фримен</strong></span>
+                    <span>·</span>
+                    <time datetime="2026-03-03T15:00">3 марта 2026, 15:00</time>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="correct1" checked disabled>
+                    <label class="form-check-label small fw-semibold text-success" for="correct1">Правильный ответ</label>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="question-card mb-3">
+              <div class="row g-3">
+                <div class="col-auto d-flex flex-column align-items-center gap-2">
+                  <img src="static/img/avatar-placeholder.svg" class="rounded-3" width="48" height="48" alt="">
+                  <div class="vote-box" role="group" aria-label="Голосование за ответ">
+                    <button type="button" class="btn-vote btn-vote-up" aria-label="Лайк">▲</button>
+                    <span class="score">3</span>
+                    <button type="button" class="btn-vote btn-vote-down" aria-label="Дизлайк">▼</button>
+                  </div>
+                </div>
+                <div class="col">
+                  <p class="mb-2">Я бы добавил ещё систему билетов для посещения парка — безопаснее.</p>
+                  <div class="answer-meta mb-2">
+                    <span>Ответил <strong>Доктор Хаус</strong></span>
+                    <span>·</span>
+                    <time datetime="2026-03-03T16:10">3 марта 2026, 16:10</time>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="correct2">
+                    <label class="form-check-label small" for="correct2">Отметить как правильный</label>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <nav class="mb-4" aria-label="Страницы ответов">
+              <ul class="pagination pagination-sm flex-wrap mb-0">
+                <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+              </ul>
+            </nav>
+
+            <section class="form-section">
+              <h2 class="h5 page-title mb-3">Ваш ответ</h2>
+              <p class="text-secondary small mb-3">!!После бэкенда здесь будет проверка авторизации. В статической вёрстке форма показана целиком.!!</p>
+              <form action="#" method="post">
+                <div class="mb-3">
+                  <label for="answer-text" class="form-label">Текст ответа</label>
+                  <textarea class="form-control" id="answer-text" name="text" rows="5" placeholder="Напишите развёрнутый ответ…" maxlength="5000"></textarea>
+                  <div class="form-text">До 5000 символов. Будьте вежливы и по делу.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить ответ</button>
+              </form>
+            </section>
+          </div>
+
+          <aside class="col-lg-4 order-1 order-lg-2">
+            <div class="sidebar-card p-3 mb-3">
+              <h2>Популярные теги</h2>
+              <div class="tag-cloud">
+                <a href="tag.html" class="t-sm">perl</a>
+                <a href="tag.html" class="t-lg">python</a>
+                <a href="tag.html" class="t-accent t-sm">кофе</a>
+                <a href="tag.html" class="t-sm">TechnoPark</a>
+                <a href="tag.html" class="t-lg">MySQL</a>
+                <a href="tag.html" class="t-warm t-sm">осень</a>
+                <a href="tag.html" class="t-md">django</a>
+                <a href="tag.html" class="t-sm">Mail.Ru</a>
+              </div>
+            </div>
+            <div class="sidebar-card p-3">
+              <h2>Лучшие участники</h2>
+              <ol class="best-members">
+                <li><a href="#">Мистер Фримен</a></li>
+                <li><a href="#">Доктор Хаус</a></li>
+                <li><a href="tag.html">Бендер</a></li>
+                <li><a href="#">Королева Виктория</a></li>
+                <li><a href="#">В. Пупкин</a></li>
+              </ol>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer py-3 mt-4">
+      <div class="container small d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+        <span>© CupOfQ</span>
+        <a href="base.html">Базовый шаблон</a>
+      </div>
+    </footer>
+  </div>
+  <script src="static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
