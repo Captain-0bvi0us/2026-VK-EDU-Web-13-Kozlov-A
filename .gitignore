@@ -1,0 +1,25 @@
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+
+# Local / build
+node_modules/
+dist/
+build/
+*.zip
+_bootstrap-tmp/

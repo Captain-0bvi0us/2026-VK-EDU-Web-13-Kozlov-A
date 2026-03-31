@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тег: bender — CupOfQ</title>
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/css/cupofq.css">
+</head>
+<body>
+  <div class="site-wrap">
+    <header class="site-header sticky-top">
+      <nav class="navbar navbar-expand-lg py-3">
+        <div class="container">
+          <a class="navbar-brand" href="index.html">Cup<span>Of</span>Q</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="mainNav">
+            <form class="search-wrap position-relative my-2 my-lg-0 ms-lg-4 flex-grow-1 flex-lg-grow-0" role="search" action="index.html" method="get">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <label class="visually-hidden" for="q-search">Поиск</label>
+              <input id="q-search" class="form-control" type="search" name="q" placeholder="Поиск по вопросам…" aria-label="Поиск">
+            </form>
+            <a class="btn btn-ask ms-lg-3 my-2 my-lg-0" href="ask.html">Задать вопрос</a>
+            <div class="user-block d-flex align-items-center gap-2 ms-lg-3 mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
+              <img class="user-avatar" src="static/img/avatar-placeholder.svg" width="40" height="40" alt="Аватар">
+              <div class="d-flex flex-column">
+                <span class="small fw-semibold text-body">Доктор Пеппер</span>
+                <div>
+                  <a class="nav-link d-inline p-0 small" href="profile.html">Настройки</a>
+                  <span class="text-muted">·</span>
+                  <a class="nav-link d-inline p-0 small" href="login.html">Выйти</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main">
+      <div class="container py-4">
+        <div class="row g-4">
+          <div class="col-lg-8 order-2 order-lg-1">
+            <h1 class="page-title h2 mb-3">Тег: <span class="text-primary">bender</span></h1>
+            <p class="text-secondary small mb-4">Вопросы с этим тегом !!демо-страница для статической вёрстки!!.</p>
+
+            <article class="question-card">
+              <div class="row g-3">
+                <div class="col-auto d-flex flex-column align-items-center gap-2">
+                  <img src="static/img/avatar-placeholder.svg" class="rounded-3" width="48" height="48" alt="">
+                  <div class="vote-box is-up" role="group" aria-label="Голосование">
+                    <button type="button" class="btn-vote btn-vote-up" aria-pressed="true" aria-label="Лайк">▲</button>
+                    <span class="score">5</span>
+                    <button type="button" class="btn-vote btn-vote-down" aria-pressed="false" aria-label="Дизлайк">▼</button>
+                  </div>
+                </div>
+                <div class="col">
+                  <a class="q-title d-block mb-1" href="question.html">Как построить лунный парк?</a>
+                  <p class="mb-2 small">Ребят, не могу разобраться с лунным парком. Не найду блэкджек…</p>
+                  <div class="d-flex flex-wrap align-items-center gap-2 question-meta">
+                    <a href="question.html">Ответов: 3</a>
+                    <span>·</span>
+                    <span>3 марта 2026, 14:20</span>
+                  </div>
+                  <div class="mt-2">
+                    <a href="tag.html" class="badge text-bg-light border text-decoration-none">блэкджек</a>
+                    <a href="tag.html" class="badge text-bg-light border text-decoration-none">bender</a>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <nav class="mt-4" aria-label="Страницы по тегу">
+              <ul class="pagination flex-wrap mb-0">
+                <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+              </ul>
+            </nav>
+          </div>
+
+          <aside class="col-lg-4 order-1 order-lg-2">
+            <div class="sidebar-card p-3 mb-3">
+              <h2>Популярные теги</h2>
+              <div class="tag-cloud">
+                <a href="tag.html" class="t-sm">perl</a>
+                <a href="tag.html" class="t-lg">python</a>
+                <a href="tag.html" class="t-accent t-sm">кофе</a>
+                <a href="tag.html" class="t-sm">TechnoPark</a>
+                <a href="tag.html" class="t-lg">MySQL</a>
+                <a href="tag.html" class="t-warm t-sm">осень</a>
+                <a href="tag.html" class="t-md">django</a>
+                <a href="tag.html" class="t-sm">Mail.Ru</a>
+              </div>
+            </div>
+            <div class="sidebar-card p-3">
+              <h2>Лучшие участники</h2>
+              <ol class="best-members">
+                <li><a href="#">Мистер Фримен</a></li>
+                <li><a href="#">Доктор Хаус</a></li>
+                <li><a href="tag.html">Бендер</a></li>
+                <li><a href="#">Королева Виктория</a></li>
+                <li><a href="#">В. Пупкин</a></li>
+              </ol>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer py-3 mt-4">
+      <div class="container small d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+        <span>© CupOfQ</span>
+        <a href="base.html">Базовый шаблон</a>
+      </div>
+    </footer>
+  </div>
+  <script src="static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

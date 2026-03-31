@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Настройки профиля — CupOfQ</title>
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="static/css/cupofq.css">
+</head>
+<body>
+  <div class="site-wrap">
+    <header class="site-header sticky-top">
+      <nav class="navbar navbar-expand-lg py-3">
+        <div class="container">
+          <a class="navbar-brand" href="index.html">Cup<span>Of</span>Q</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="mainNav">
+            <form class="search-wrap position-relative my-2 my-lg-0 ms-lg-4 flex-grow-1 flex-lg-grow-0" role="search" action="index.html" method="get">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <label class="visually-hidden" for="q-search">Поиск</label>
+              <input id="q-search" class="form-control" type="search" name="q" placeholder="Поиск по вопросам…" aria-label="Поиск">
+            </form>
+            <a class="btn btn-ask ms-lg-3 my-2 my-lg-0" href="ask.html">Задать вопрос</a>
+            <div class="user-block d-flex align-items-center gap-2 ms-lg-3 mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
+              <img class="user-avatar" src="static/img/avatar-placeholder.svg" width="40" height="40" alt="Аватар">
+              <div class="d-flex flex-column">
+                <span class="small fw-semibold text-body">Доктор Пеппер</span>
+                <div>
+                  <a class="nav-link d-inline p-0 small fw-semibold" href="profile.html">Настройки</a>
+                  <span class="text-muted">·</span>
+                  <a class="nav-link d-inline p-0 small" href="login.html">Выйти</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main">
+      <div class="container py-4">
+        <div class="row g-4">
+          <div class="col-lg-8 order-2 order-lg-1">
+            <h1 class="page-title h2 mb-3">Настройки: Доктор Пеппер</h1>
+
+            <div class="alert alert-warning" role="alert">
+              Не удалось сохранить профиль: исправьте отмеченные поля. !!пример ошибки формы!!
+            </div>
+
+            <form class="form-section" action="#" method="post" enctype="multipart/form-data" novalidate>
+              <div class="mb-4 text-center text-sm-start">
+                <p class="form-label">Текущий аватар</p>
+                <img class="avatar-preview d-block mx-auto mx-sm-0 mb-2" src="static/img/avatar-placeholder.svg" width="120" height="120" alt="Превью аватара">
+                <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                  <input type="text" class="form-control" readonly value="C:\avatar.jpg" aria-label="Путь к новому файлу">
+                  <button type="button" class="btn btn-outline-secondary">Выбрать</button>
+                </div>
+                <input type="file" class="form-control mt-2" accept="image/*" aria-describedby="prof-avatar-help">
+                <div id="prof-avatar-help" class="form-text">Квадратное изображение смотрится лучше. До 2 МБ.</div>
+              </div>
+              <div class="mb-3">
+                <label for="prof-login" class="form-label">Логин</label>
+                <input type="text" class="form-control" id="prof-login" name="login" value="dr_pepper" readonly aria-describedby="prof-login-help">
+                <div id="prof-login-help" class="form-text">Логин нельзя сменить после регистрации. !!демо!!</div>
+              </div>
+              <div class="mb-3">
+                <label for="prof-email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="prof-email" name="email" value="dr.pepper@mail.ru" autocomplete="email" required>
+              </div>
+              <div class="mb-4">
+                <label for="prof-nick" class="form-label">Отображаемое имя</label>
+                <input type="text" class="form-control is-invalid" id="prof-nick" name="nickname" value="Доктор Перппер" maxlength="50" aria-describedby="prof-nick-help prof-nick-error" required>
+                <div id="prof-nick-help" class="form-text">До 50 символов. Будет видно в вопросах и ответах.</div>
+                <div id="prof-nick-error" class="invalid-feedback">Содержит повторяющиеся буквы или недопустимые символы. !!пример ошибки поля!!</div>
+              </div>
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+          </div>
+
+          <aside class="col-lg-4 order-1 order-lg-2">
+            <div class="sidebar-card p-3 mb-3">
+              <h2>Популярные теги</h2>
+              <div class="tag-cloud">
+                <a href="tag.html" class="t-sm">perl</a>
+                <a href="tag.html" class="t-lg">python</a>
+                <a href="tag.html" class="t-accent t-sm">кофе</a>
+                <a href="tag.html" class="t-sm">TechnoPark</a>
+                <a href="tag.html" class="t-lg">MySQL</a>
+                <a href="tag.html" class="t-warm t-sm">осень</a>
+                <a href="tag.html" class="t-md">django</a>
+                <a href="tag.html" class="t-sm">Mail.Ru</a>
+              </div>
+            </div>
+            <div class="sidebar-card p-3">
+              <h2>Лучшие участники</h2>
+              <ol class="best-members">
+                <li><a href="#">Мистер Фримен</a></li>
+                <li><a href="#">Доктор Хаус</a></li>
+                <li><a href="tag.html">Бендер</a></li>
+                <li><a href="#">Королева Виктория</a></li>
+                <li><a href="#">В. Пупкин</a></li>
+              </ol>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer py-3 mt-4">
+      <div class="container small d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+        <span>© CupOfQ</span>
+        <a href="base.html">Базовый шаблон</a>
+      </div>
+    </footer>
+  </div>
+  <script src="static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
