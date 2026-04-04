@@ -1,0 +1,27 @@
+{% load static %}
+<article class="question-card">
+  <div class="row g-3">
+    <div class="col-auto d-flex flex-column align-items-center gap-2">
+      <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
+      <div class="vote-box {% if question.vote_state == 'up' %}is-up{% elif question.vote_state == 'down' %}is-down{% endif %}" role="group" aria-label="Голосование">
+        <button type="button" class="btn-vote btn-vote-up" {% if question.vote_state == 'up' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+        <span class="score">{{ question.score }}</span>
+        <button type="button" class="btn-vote btn-vote-down" {% if question.vote_state == 'down' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
+      </div>
+    </div>
+    <div class="col">
+      <a class="q-title d-block mb-1" href="{% url 'question_detail' question.id %}">{{ question.title }}</a>
+      <p class="mb-2 small">{{ question.text }}</p>
+      <div class="d-flex flex-wrap align-items-center gap-2 question-meta">
+        <a href="{% url 'question_detail' question.id %}">Ответов: {{ question.answer_count }}</a>
+        <span>·</span>
+        <span>{{ question.created }}</span>
+      </div>
+      <div class="mt-2">
+        {% for tg in question.tags %}
+          <a href="{% url 'tag' tag=tg.slug %}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</article>

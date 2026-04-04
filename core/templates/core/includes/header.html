@@ -1,0 +1,38 @@
+{% load static %}
+<header class="site-header sticky-top">
+  <nav class="navbar navbar-expand-lg py-3">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'index' %}">Cup<span>Of</span>Q</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <form class="search-wrap position-relative my-2 my-lg-0 ms-lg-4 flex-grow-1 flex-lg-grow-0" role="search" action="{% url 'index' %}" method="get">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <label class="visually-hidden" for="q-search">Поиск</label>
+          <input id="q-search" class="form-control" type="search" name="q" placeholder="Поиск по вопросам…" aria-label="Поиск" value="{{ request.GET.q }}">
+        </form>
+        <a class="btn btn-ask ms-lg-3 my-2 my-lg-0" href="{% url 'ask' %}">Задать вопрос</a>
+        {% if nav_variant == "user" %}
+          <div class="user-block d-flex align-items-center gap-2 ms-lg-3 mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
+            <img class="user-avatar" src="{% static 'core/img/avatar-placeholder.svg' %}" width="40" height="40" alt="Аватар">
+            <div class="d-flex flex-column">
+              <span class="small fw-semibold text-body">Доктор Пеппер</span>
+              <div>
+                <a class="nav-link d-inline p-0 small" href="{% url 'profile' %}">Настройки</a>
+                <span class="text-muted">·</span>
+                <a class="nav-link d-inline p-0 small" href="{% url 'login' %}">Выйти</a>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="user-block ms-lg-3 mt-3 mt-lg-0 pt-2 pt-lg-0 border-top border-lg-0">
+            <a class="nav-link d-inline p-0 small" href="{% url 'login' %}">Войти</a>
+            <span class="text-muted">·</span>
+            <a class="nav-link d-inline p-0 small" href="{% url 'signup' %}">Регистрация</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>

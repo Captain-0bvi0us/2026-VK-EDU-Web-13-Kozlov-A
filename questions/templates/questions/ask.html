@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-4">Новый вопрос</h1>
+
+  <div class="alert alert-danger" role="alert">
+    Не удалось сохранить вопрос: проверьте поля ниже (пример сообщения об ошибке формы).
+  </div>
+
+  <form class="form-section" action="{% url 'ask' %}" method="post" novalidate>
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="q-title" class="form-label">Заголовок</label>
+      <input type="text" class="form-control is-invalid" id="q-title" name="title" value="Как построить лунный парк????????" maxlength="150" aria-describedby="q-title-help q-title-error" required>
+      <div id="q-title-help" class="form-text">Кратко сформулируйте суть. Максимум 150 символов.</div>
+      <div id="q-title-error" class="invalid-feedback">Слишком длинный заголовок или недопустимые символы.</div>
+    </div>
+    <div class="mb-3">
+      <label for="q-body" class="form-label">Текст</label>
+      <textarea class="form-control" id="q-body" name="body" rows="6" maxlength="3000" aria-describedby="q-body-help">Реально, как?
+Вообще не понимаю.</textarea>
+      <div id="q-body-help" class="form-text">Опишите контекст и что вы уже пробовали. До 3000 символов.</div>
+    </div>
+    <div class="mb-4">
+      <label for="q-tags" class="form-label">Теги</label>
+      <input type="text" class="form-control" id="q-tags" name="tags" value="луна, парк, головоломка" maxlength="80" aria-describedby="q-tags-help" placeholder="через запятую">
+      <div id="q-tags-help" class="form-text">До 5 тегов, латиница/кириллица и дефисы. Не больше 80 символов суммарно.</div>
+    </div>
+    <button type="submit" class="btn btn-ask">Опубликовать вопрос</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-3">Вход</h1>
+
+  <div class="alert alert-danger" role="alert">
+    Вы ввели неверный логин или пароль. Попробуйте ещё раз или <a href="{% url 'signup' %}" class="alert-link">создайте аккаунт</a>.
+  </div>
+
+  <form class="form-section" action="{% url 'login' %}" method="post" style="max-width: 420px;">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="login" class="form-label">Логин</label>
+      <input type="text" class="form-control" id="login" name="login" autocomplete="username" placeholder="Введите логин" required>
+      <div class="form-text">Тот же логин, что при регистрации.</div>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Пароль</label>
+      <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn btn-ask mb-3">Войти</button>
+    <p class="mb-0 small text-secondary">
+      Нет аккаунта? <a href="{% url 'signup' %}">Создать новый</a>
+    </p>
+  </form>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-3">Тег: <span class="text-primary">{{ tag_name }}</span></h1>
+  <p class="text-secondary small mb-4">Вопросы с этим тегом (демо-данные).</p>
+
+  {% for question in page.object_list %}
+    {% include "questions/includes/question_card.html" with question=question %}
+  {% endfor %}
+
+  {% include "core/includes/pagination.html" with page=page %}
+{% endblock %}
