@@ -24,8 +24,10 @@ db.sqlite3
 /static/
 /media/
 
-# Секреты
+# Секреты и локальные окружения
 .env
+.env.local
+.env.docker
 
 # Logs
 *.log

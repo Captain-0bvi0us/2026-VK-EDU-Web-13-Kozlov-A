@@ -10,16 +10,16 @@
       </div>
     </div>
     <div class="col">
-      <a class="q-title d-block mb-1" href="{% url 'question_detail' question.id %}">{{ question.title }}</a>
+      <a class="q-title d-block mb-1" href="{{ question.get_absolute_url }}">{{ question.title }}</a>
       <p class="mb-2 small">{{ question.text }}</p>
       <div class="d-flex flex-wrap align-items-center gap-2 question-meta">
-        <a href="{% url 'question_detail' question.id %}">Ответов: {{ question.answer_count }}</a>
+        <a href="{{ question.get_absolute_url }}">Ответов: {{ question.answer_count }}</a>
         <span>·</span>
-        <span>{{ question.created }}</span>
+        <span>{{ question.created_display }}</span>
       </div>
       <div class="mt-2">
-        {% for tg in question.tags %}
-          <a href="{% url 'tag' tag=tg.slug %}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+        {% for tg in question.tags.all %}
+          <a href="{{ tg.get_absolute_url }}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
         {% endfor %}
       </div>
     </div>

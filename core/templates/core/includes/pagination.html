@@ -1,23 +1,26 @@
+{% load pagination_tags %}
 {% if page.has_other_pages %}
 <nav class="mt-4" aria-label="Постраничная навигация">
   <ul class="pagination flex-wrap mb-0">
     {% if page.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="{{ request.path }}?page={{ page.previous_page_number }}">Назад</a>
+        <a class="page-link" href="?page={{ page.previous_page_number }}">Назад</a>
       </li>
     {% endif %}
-    {% for num in page.paginator.page_range %}
-      <li class="page-item {% if page.number == num %}active{% endif %}" {% if page.number == num %}aria-current="page"{% endif %}>
-        {% if page.number == num %}
-          <span class="page-link">{{ num }}</span>
-        {% else %}
-          <a class="page-link" href="{{ request.path }}?page={{ num }}">{{ num }}</a>
-        {% endif %}
-      </li>
+    {% for item in page|elided_page_numbers:2 %}
+      {% if item is None %}
+        <li class="page-item disabled" aria-hidden="true"><span class="page-link">…</span></li>
+      {% elif item == page.number %}
+        <li class="page-item active" aria-current="page"><span class="page-link">{{ item }}</span></li>
+      {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ item }}">{{ item }}</a>
+        </li>
+      {% endif %}
     {% endfor %}
     {% if page.has_next %}
       <li class="page-item">
-        <a class="page-link" href="{{ request.path }}?page={{ page.next_page_number }}">Вперёд</a>
+        <a class="page-link" href="?page={{ page.next_page_number }}">Вперёд</a>
       </li>
     {% endif %}
   </ul>

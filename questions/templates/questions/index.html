@@ -10,6 +10,8 @@
 
   {% for question in page.object_list %}
     {% include "questions/includes/question_card.html" with question=question %}
+  {% empty %}
+    <p class="text-secondary mb-4">Пока нет ни одного вопроса.</p>
   {% endfor %}
 
   {% include "core/includes/pagination.html" with page=page %}

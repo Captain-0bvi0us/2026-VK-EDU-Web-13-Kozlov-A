@@ -1,76 +1,59 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .dummy import build_answers, build_questions
+from .models import Answer, Question, Tag
+from .presentation import render_paginated_question_list
 from .utils import paginate
 
 
 def index(request):
-    questions = build_questions(30)
-    page = paginate(questions, request, per_page=5)
-    return render(
+    return render_paginated_question_list(
         request,
-        "questions/index.html",
-        {
-            "page_title": "Новые вопросы — CupOfQ",
-            "list_title": "Новые вопросы",
-            "page": page,
-            "nav_variant": "user",
-        },
+        Question.objects.new(),
+        template="questions/index.html",
+        page_title="Новые вопросы — CupOfQ",
+        list_title="Новые вопросы",
+        nav_variant="user",
+        per_page=5,
     )
 
 
 def hot(request):
-    questions = build_questions(25)
-    page = paginate(questions, request, per_page=5)
-    return render(
+    return render_paginated_question_list(
         request,
-        "questions/hot.html",
-        {
-            "page_title": "Горячие вопросы — CupOfQ",
-            "list_title": "Горячие вопросы",
-            "page": page,
-            "nav_variant": "user",
-        },
+        Question.objects.popular(),
+        template="questions/hot.html",
+        page_title="Горячие вопросы — CupOfQ",
+        list_title="Горячие вопросы",
+        nav_variant="user",
+        per_page=5,
     )
 
 
 def tag(request, tag):
-    questions = build_questions(20)
-    page = paginate(questions, request, per_page=5)
-    return render(
+    tag_obj = get_object_or_404(Tag, slug=tag)
+    return render_paginated_question_list(
         request,
-        "questions/tag.html",
-        {
-            "page_title": f"Тег: {tag} — CupOfQ",
-            "tag_name": tag,
-            "page": page,
-            "nav_variant": "user",
-        },
+        Question.objects.for_tag_slug(tag_obj.slug),
+        template="questions/tag.html",
+        page_title=f"Тег: {tag_obj.name} — CupOfQ",
+        list_title="",
+        nav_variant="user",
+        per_page=5,
+        extra_context={"tag_name": tag_obj.name},
     )
 
 
 def question_detail(request, pk):
     if request.method == "POST":
         return redirect("question_detail", pk=pk)
-    answers = build_answers(pk, 22)
-    page = paginate(answers, request, per_page=3)
+    question = get_object_or_404(Question.objects.with_list_defaults(), pk=pk)
+    page = paginate(Answer.objects.for_question(question), request, per_page=3)
     return render(
         request,
         "questions/question.html",
         {
-            "page_title": f"Вопрос #{pk} — CupOfQ",
-            "question": {
-                "id": pk,
-                "title": "Как построить лунный парк?",
-                "text": "Lorem ipsum dolor sit amet — текст вопроса-заглушки для ДЗ2.",
-                "created": "3 марта 2026, 14:20",
-                "author": "Гость",
-                "score": 5,
-                "tags": [
-                    {"name": "блэкджек", "slug": "blackjack"},
-                    {"name": "bender", "slug": "bender"},
-                ],
-            },
+            "page_title": f"{question.title} — CupOfQ",
+            "question": question,
             "page": page,
             "nav_variant": "guest",
         },
@@ -83,8 +66,5 @@ def ask(request):
     return render(
         request,
         "questions/ask.html",
-        {
-            "page_title": "Новый вопрос — CupOfQ",
-            "nav_variant": "user",
-        },
+        {"page_title": "Новый вопрос — CupOfQ", "nav_variant": "user"},
     )

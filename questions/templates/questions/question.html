@@ -18,13 +18,13 @@
         <h1 class="h4 page-title mb-2">{{ question.title }}</h1>
         <p class="mb-2">{{ question.text }}</p>
         <div class="question-meta mb-2">
-          <span>Спросил <strong>{{ question.author }}</strong></span>
+          <span>Спросил <strong>{{ question.author_display }}</strong></span>
           <span>·</span>
-          <time datetime="2026-03-03T14:20">{{ question.created }}</time>
+          <time datetime="{{ question.created_at|date:'c' }}">{{ question.created_display }}</time>
         </div>
         <div>
-          {% for tg in question.tags %}
-            <a href="{% url 'tag' tag=tg.slug %}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+          {% for tg in question.tags.all %}
+            <a href="{{ tg.get_absolute_url }}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
           {% endfor %}
         </div>
       </div>
@@ -47,9 +47,9 @@
         <div class="col">
           <p class="mb-2">{{ answer.text }}</p>
           <div class="answer-meta mb-2">
-            <span>Ответил <strong>{{ answer.author }}</strong></span>
+            <span>Ответил <strong>{{ answer.author_display }}</strong></span>
             <span>·</span>
-            <span>{{ answer.created }}</span>
+            <span>{{ answer.created_display }}</span>
           </div>
           <div class="form-check">
             {% if answer.is_correct %}
@@ -63,6 +63,8 @@
         </div>
       </div>
     </article>
+  {% empty %}
+    <p class="text-secondary mb-4">Пока нет ни одного ответа к этому вопросу.</p>
   {% endfor %}
 
   {% include "core/includes/pagination.html" with page=page %}
@@ -70,7 +72,7 @@
   <section class="form-section mt-4">
     <h2 class="h5 page-title mb-3">Ваш ответ</h2>
     <p class="text-secondary small mb-3">После бэкенда здесь будет проверка авторизации. В статической «рыбе» форма показана целиком.</p>
-    <form action="{% url 'question_detail' question.id %}" method="post">
+    <form action="{{ question.get_absolute_url }}" method="post">
       {% csrf_token %}
       <div class="mb-3">
         <label for="answer-text" class="form-label">Текст ответа</label>
