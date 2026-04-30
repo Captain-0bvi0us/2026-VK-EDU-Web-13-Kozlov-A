@@ -3,10 +3,32 @@
   <div class="row g-3">
     <div class="col-auto d-flex flex-column align-items-center gap-2">
       <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
-      <div class="vote-box {% if question.vote_state == 'up' %}is-up{% elif question.vote_state == 'down' %}is-down{% endif %}" role="group" aria-label="Голосование">
-        <button type="button" class="btn-vote btn-vote-up" {% if question.vote_state == 'up' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
-        <span class="score">{{ question.score }}</span>
-        <button type="button" class="btn-vote btn-vote-down" {% if question.vote_state == 'down' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
+      <div class="vote-box {% if question.viewer_has_like %}is-up{% endif %}" role="group" aria-label="Голосование">
+        {% if user.is_authenticated %}
+          {% if question.author_id == user.id %}
+            <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой вопрос" aria-label="Лайк">▲</button>
+            <span class="score">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Снять лайк">▼</button>
+          {% else %}
+            <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="action" value="up">
+              <button type="submit" class="btn-vote btn-vote-up" {% if question.viewer_has_like %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+            </form>
+            <span class="score">{{ question.score }}</span>
+            <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="action" value="down">
+              <button type="submit" class="btn-vote btn-vote-down" aria-label="Снять лайк">▼</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+          <span class="score">{{ question.score }}</span>
+          <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Снять лайк">▼</button>
+        {% endif %}
       </div>
     </div>
     <div class="col">

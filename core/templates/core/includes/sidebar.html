@@ -14,7 +14,7 @@
     <ol class="best-members">
       {% for m in best_members %}
         <li>
-          <a href="#" title="Профиль скоро будет, пока просто расчет и отображение данных" class="text-decoration-none">{{ m.username }}</a>
+          <a href="{% url 'public_user' m.username %}" class="text-decoration-none">{{ m.username }}</a>
         </li>
       {% endfor %}
     </ol>

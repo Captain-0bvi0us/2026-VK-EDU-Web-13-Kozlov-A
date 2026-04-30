@@ -8,7 +8,6 @@ User = get_user_model()
 POPULAR_TAGS_LIMIT = 8
 BEST_MEMBERS_LIMIT = 5
 
-# Визуальные размеры облака тегов по убыванию «популярности» (индекс в выборке из 8).
 _TAG_SIZES = ("lg", "md", "md", "sm", "sm", "accent", "warm", "sm")
 
 
@@ -36,3 +35,10 @@ def best_members_for_sidebar():
         .order_by("-activity", "username")[:BEST_MEMBERS_LIMIT]
     )
     return [{"username": u.get_username()} for u in qs]
+
+
+def sidebar_context(request):
+    return {
+        "popular_tags": popular_tags_for_sidebar(),
+        "best_members": best_members_for_sidebar(),
+    }

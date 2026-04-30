@@ -8,10 +8,32 @@
     <div class="row g-3">
       <div class="col-auto d-flex flex-column align-items-center gap-2">
         <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="56" height="56" alt="">
-        <div class="vote-box" role="group" aria-label="Голосование за вопрос">
-          <button type="button" class="btn-vote btn-vote-up" aria-label="Лайк">▲</button>
-          <span class="score">{{ question.score }}</span>
-          <button type="button" class="btn-vote btn-vote-down" aria-label="Дизлайк">▼</button>
+        <div class="vote-box {% if question.viewer_has_like %}is-up{% endif %}" role="group" aria-label="Голосование за вопрос">
+          {% if user.is_authenticated %}
+            {% if question.author_id == user.id %}
+              <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой вопрос" aria-label="Лайк">▲</button>
+              <span class="score">{{ question.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Снять лайк">▼</button>
+            {% else %}
+              <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="hidden" name="action" value="up">
+                <button type="submit" class="btn-vote btn-vote-up" {% if question.viewer_has_like %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+              </form>
+              <span class="score">{{ question.score }}</span>
+              <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="hidden" name="action" value="down">
+                <button type="submit" class="btn-vote btn-vote-down" aria-label="Снять лайк">▼</button>
+              </form>
+            {% endif %}
+          {% else %}
+            <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+            <span class="score">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Снять лайк">▼</button>
+          {% endif %}
         </div>
       </div>
       <div class="col">
@@ -34,14 +56,36 @@
   <h2 class="h5 page-title mb-3">Ответы</h2>
 
   {% for answer in page.object_list %}
-    <article class="question-card mb-3">
+    <article id="answer-{{ answer.pk }}" class="question-card mb-3">
       <div class="row g-3">
         <div class="col-auto d-flex flex-column align-items-center gap-2">
           <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
-          <div class="vote-box {% if answer.vote_state == 'up' %}is-up{% elif answer.vote_state == 'down' %}is-down{% endif %}" role="group" aria-label="Голосование за ответ">
-            <button type="button" class="btn-vote btn-vote-up" {% if answer.vote_state == 'up' %}aria-pressed="true"{% endif %} aria-label="Лайк">▲</button>
-            <span class="score">{{ answer.score }}</span>
-            <button type="button" class="btn-vote btn-vote-down" {% if answer.vote_state == 'down' %}aria-pressed="true"{% endif %} aria-label="Дизлайк">▼</button>
+          <div class="vote-box {% if answer.viewer_has_like %}is-up{% endif %}" role="group" aria-label="Голосование за ответ">
+            {% if user.is_authenticated %}
+              {% if answer.author_id == user.id %}
+                <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой ответ" aria-label="Лайк">▲</button>
+                <span class="score">{{ answer.score }}</span>
+                <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой ответ" aria-label="Снять лайк">▼</button>
+              {% else %}
+                <form method="post" action="{% url 'answer_vote' answer.pk %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <input type="hidden" name="action" value="up">
+                  <button type="submit" class="btn-vote btn-vote-up" {% if answer.viewer_has_like %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+                </form>
+                <span class="score">{{ answer.score }}</span>
+                <form method="post" action="{% url 'answer_vote' answer.pk %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <input type="hidden" name="action" value="down">
+                  <button type="submit" class="btn-vote btn-vote-down" aria-label="Снять лайк">▼</button>
+                </form>
+              {% endif %}
+            {% else %}
+              <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+              <span class="score">{{ answer.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Снять лайк">▼</button>
+            {% endif %}
           </div>
         </div>
         <div class="col">
@@ -55,9 +99,21 @@
             {% if answer.is_correct %}
               <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" checked disabled>
               <label class="form-check-label small fw-semibold text-success" for="correct-{{ answer.id }}">Правильный ответ</label>
+            {% elif user.is_authenticated and user.id == question.author_id %}
+              <form method="post" action="{% url 'mark_answer_correct' answer.pk %}" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-link btn-sm text-start p-0 text-decoration-none">Отметить как правильный</button>
+              </form>
             {% else %}
-              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}">
-              <label class="form-check-label small" for="correct-{{ answer.id }}">Отметить как правильный</label>
+              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" disabled>
+              <label class="form-check-label small text-muted" for="correct-{{ answer.id }}">
+                {% if user.is_authenticated %}
+                  Только автор вопроса может отметить правильный ответ
+                {% else %}
+                  Войдите, чтобы видеть действия с ответами
+                {% endif %}
+              </label>
             {% endif %}
           </div>
         </div>
@@ -71,15 +127,29 @@
 
   <section class="form-section mt-4">
     <h2 class="h5 page-title mb-3">Ваш ответ</h2>
-    <p class="text-secondary small mb-3">После бэкенда здесь будет проверка авторизации. В статической «рыбе» форма показана целиком.</p>
-    <form action="{{ question.get_absolute_url }}" method="post">
-      {% csrf_token %}
+    {% if user.is_authenticated %}
+      <form action="{{ question.get_absolute_url }}" method="post" novalidate>
+        {% csrf_token %}
+        {% if answer_form.non_field_errors %}
+          <div class="alert alert-danger">{% for e in answer_form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ answer_form.text.id_for_label }}">{{ answer_form.text.label }}</label>
+          {{ answer_form.text }}
+          {% if answer_form.text.errors %}
+            <div class="invalid-feedback d-block">{{ answer_form.text.errors|join:" " }}</div>
+          {% endif %}
+          <div class="form-text">Будьте вежливы и по делу.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить ответ</button>
+      </form>
+    {% else %}
+      <p class="text-secondary small mb-3">Чтобы ответить, <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a>.</p>
       <div class="mb-3">
-        <label for="answer-text" class="form-label">Текст ответа</label>
-        <textarea class="form-control" id="answer-text" name="text" rows="5" placeholder="Напишите развёрнутый ответ…" maxlength="5000"></textarea>
-        <div class="form-text">До 5000 символов. Будьте вежливы и по делу.</div>
+        <label class="form-label">Текст ответа</label>
+        <textarea class="form-control" rows="5" disabled title="Войдите, чтобы написать ответ" placeholder="Доступно после входа…"></textarea>
       </div>
-      <button type="submit" class="btn btn-primary">Отправить ответ</button>
-    </form>
+      <button type="button" class="btn btn-primary" disabled title="Войдите, чтобы отправить ответ">Отправить ответ</button>
+    {% endif %}
   </section>
 {% endblock %}

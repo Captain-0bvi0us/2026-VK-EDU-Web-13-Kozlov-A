@@ -4,6 +4,8 @@ from django.db.models import Count
 from django.urls import reverse
 from django.utils import formats, timezone
 
+from core.utils import user_display_name
+
 
 class Tag(models.Model):
     name = models.CharField("название", max_length=64)
@@ -101,11 +103,7 @@ class Question(models.Model):
 
     @property
     def author_display(self) -> str:
-        return self.author.get_username()
-
-    @property
-    def vote_state(self) -> str:
-        return "none"
+        return user_display_name(self.author)
 
 
 class AnswerQuerySet(models.QuerySet):
@@ -156,11 +154,7 @@ class Answer(models.Model):
 
     @property
     def author_display(self) -> str:
-        return self.author.get_username()
-
-    @property
-    def vote_state(self) -> str:
-        return "none"
+        return user_display_name(self.author)
 
 
 class QuestionLike(models.Model):

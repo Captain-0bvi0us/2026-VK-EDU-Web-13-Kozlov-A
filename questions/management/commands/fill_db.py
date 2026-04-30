@@ -84,6 +84,8 @@ class Command(BaseCommand):
                     username=f"{run_id}_u{j}",
                     email=f"{run_id}_u{j}@filldb.local",
                     password=pwd_hash,
+                    first_name=(fake.first_name()[:150]),
+                    last_name=(fake.last_name()[:150]),
                 )
                 for j in range(i, min(i + BATCH, n_users))
             ]

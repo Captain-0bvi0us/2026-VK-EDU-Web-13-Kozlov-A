@@ -5,48 +5,33 @@
 {% block content %}
   <h1 class="page-title h2 mb-3">Регистрация</h1>
 
-  <div class="alert alert-danger" role="alert">
-    Этот логин уже занят. <a href="{% url 'login' %}" class="alert-link">Войти</a> или выберите другой логин.
-  </div>
+  {% if signup_staged_name %}
+    <div class="alert alert-info" role="status">
+      Файл «{{ signup_staged_name }}» сохранён — он будет добавлен в профиль после успешной регистрации. Поле «Выбор файла» пустеет из‑за ограничений браузера; повторно выбирать файл не нужно, если имя и размер устраивают.
+    </div>
+  {% endif %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+    </div>
+  {% endif %}
 
   <form class="form-section" action="{% url 'signup' %}" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
-    <div class="mb-3">
-      <label for="reg-login" class="form-label">Логин</label>
-      <input type="text" class="form-control is-invalid" id="reg-login" name="login" value="dr_pepper" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" aria-describedby="reg-login-help reg-login-error" required>
-      <div id="reg-login-help" class="form-text">Латиница, цифры и подчёркивание, 3–30 символов.</div>
-      <div id="reg-login-error" class="invalid-feedback">Этот логин уже занят.</div>
-    </div>
-    <div class="mb-3">
-      <label for="reg-email" class="form-label">Email</label>
-      <input type="email" class="form-control" id="reg-email" name="email" value="" autocomplete="email" placeholder="you@example.com" aria-describedby="reg-email-help" required>
-      <div id="reg-email-help" class="form-text">Уникальный адрес — на один email один аккаунт.</div>
-    </div>
-    <div class="mb-3">
-      <label for="reg-nick" class="form-label">Отображаемое имя</label>
-      <input type="text" class="form-control" id="reg-nick" name="nickname" value="Доктор Пеппер" maxlength="50" aria-describedby="reg-nick-help" required>
-      <div id="reg-nick-help" class="form-text">Как вас будут видеть другие участники. До 50 символов.</div>
-    </div>
-    <div class="mb-3">
-      <label for="reg-pass" class="form-label">Пароль</label>
-      <input type="password" class="form-control is-invalid" id="reg-pass" name="password" autocomplete="new-password" minlength="8" aria-describedby="reg-pass-help reg-pass-error" required>
-      <div id="reg-pass-help" class="form-text">Не короче 8 символов, лучше с буквами и цифрами.</div>
-      <div id="reg-pass-error" class="invalid-feedback">Пароль слишком простой. !для демонстрации ошибки поля!</div>
-    </div>
-    <div class="mb-3">
-      <label for="reg-pass2" class="form-label">Повтор пароля</label>
-      <input type="password" class="form-control" id="reg-pass2" name="password2" autocomplete="new-password" aria-describedby="reg-pass2-help" required>
-      <div id="reg-pass2-help" class="form-text">Должен совпадать с полем выше.</div>
-    </div>
-    <div class="mb-4">
-      <label class="form-label">Аватар</label>
-      <div class="d-flex flex-column flex-sm-row align-items-start gap-2">
-        <input type="text" class="form-control" readonly value="C:\avatar.jpg" aria-label="Путь к файлу аватара">
-        <button type="button" class="btn btn-outline-secondary flex-shrink-0">Выбрать файл</button>
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+        {% if field.errors %}
+          <div class="invalid-feedback d-block">{{ field.errors|join:" " }}</div>
+        {% endif %}
       </div>
-      <input type="file" class="form-control mt-2" accept="image/*" aria-describedby="avatar-help">
-      <div id="avatar-help" class="form-text">JPEG или PNG, до 2 МБ. Необязательно.</div>
-    </div>
+    {% endfor %}
     <button type="submit" class="btn btn-ask">Зарегистрироваться</button>
+    <p class="mt-3 mb-0 small text-secondary">
+      Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+    </p>
   </form>
 {% endblock %}
