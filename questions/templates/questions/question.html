@@ -1,0 +1,85 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <article class="question-card mb-4">
+    <div class="row g-3">
+      <div class="col-auto d-flex flex-column align-items-center gap-2">
+        <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="56" height="56" alt="">
+        <div class="vote-box" role="group" aria-label="Голосование за вопрос">
+          <button type="button" class="btn-vote btn-vote-up" aria-label="Лайк">▲</button>
+          <span class="score">{{ question.score }}</span>
+          <button type="button" class="btn-vote btn-vote-down" aria-label="Дизлайк">▼</button>
+        </div>
+      </div>
+      <div class="col">
+        <h1 class="h4 page-title mb-2">{{ question.title }}</h1>
+        <p class="mb-2">{{ question.text }}</p>
+        <div class="question-meta mb-2">
+          <span>Спросил <strong>{{ question.author_display }}</strong></span>
+          <span>·</span>
+          <time datetime="{{ question.created_at|date:'c' }}">{{ question.created_display }}</time>
+        </div>
+        <div>
+          {% for tg in question.tags.all %}
+            <a href="{{ tg.get_absolute_url }}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <h2 class="h5 page-title mb-3">Ответы</h2>
+
+  {% for answer in page.object_list %}
+    <article class="question-card mb-3">
+      <div class="row g-3">
+        <div class="col-auto d-flex flex-column align-items-center gap-2">
+          <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
+          <div class="vote-box {% if answer.vote_state == 'up' %}is-up{% elif answer.vote_state == 'down' %}is-down{% endif %}" role="group" aria-label="Голосование за ответ">
+            <button type="button" class="btn-vote btn-vote-up" {% if answer.vote_state == 'up' %}aria-pressed="true"{% endif %} aria-label="Лайк">▲</button>
+            <span class="score">{{ answer.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" {% if answer.vote_state == 'down' %}aria-pressed="true"{% endif %} aria-label="Дизлайк">▼</button>
+          </div>
+        </div>
+        <div class="col">
+          <p class="mb-2">{{ answer.text }}</p>
+          <div class="answer-meta mb-2">
+            <span>Ответил <strong>{{ answer.author_display }}</strong></span>
+            <span>·</span>
+            <span>{{ answer.created_display }}</span>
+          </div>
+          <div class="form-check">
+            {% if answer.is_correct %}
+              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" checked disabled>
+              <label class="form-check-label small fw-semibold text-success" for="correct-{{ answer.id }}">Правильный ответ</label>
+            {% else %}
+              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}">
+              <label class="form-check-label small" for="correct-{{ answer.id }}">Отметить как правильный</label>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="text-secondary mb-4">Пока нет ни одного ответа к этому вопросу.</p>
+  {% endfor %}
+
+  {% include "core/includes/pagination.html" with page=page %}
+
+  <section class="form-section mt-4">
+    <h2 class="h5 page-title mb-3">Ваш ответ</h2>
+    <p class="text-secondary small mb-3">После бэкенда здесь будет проверка авторизации. В статической «рыбе» форма показана целиком.</p>
+    <form action="{{ question.get_absolute_url }}" method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="answer-text" class="form-label">Текст ответа</label>
+        <textarea class="form-control" id="answer-text" name="text" rows="5" placeholder="Напишите развёрнутый ответ…" maxlength="5000"></textarea>
+        <div class="form-text">До 5000 символов. Будьте вежливы и по делу.</div>
+      </div>
+      <button type="submit" class="btn btn-primary">Отправить ответ</button>
+    </form>
+  </section>
+{% endblock %}

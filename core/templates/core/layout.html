@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-3">Базовый шаблон</h1>
+  <p class="lead text-secondary">Общий каркас CupOfQ: header, main, footer, sidebar. Остальные страницы наследуют тот же <code>base.html</code>.</p>
+  <ul class="list-unstyled d-flex flex-wrap gap-2">
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'index' %}">Главная</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'question_detail' 1 %}">Вопрос</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'ask' %}">Новый вопрос</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'tag' tag='bender' %}">По тегу</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'login' %}">Вход</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'signup' %}">Регистрация</a></li>
+    <li><a class="btn btn-outline-secondary btn-sm" href="{% url 'profile' %}">Профиль</a></li>
+  </ul>
+{% endblock %}
