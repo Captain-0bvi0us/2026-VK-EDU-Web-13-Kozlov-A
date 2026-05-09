@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-3">Вход</h1>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form class="form-section" action="{% url 'login' %}" method="post" style="max-width: 420px;" novalidate>
+    {% csrf_token %}
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+    <div class="mb-3">
+      <label for="id_username" class="form-label">{{ form.username.label }}</label>
+      {{ form.username }}
+      {% if form.username.errors %}
+        <div class="invalid-feedback d-block">{{ form.username.errors|join:" " }}</div>
+      {% endif %}
+      <div class="form-text">Тот же логин, что при регистрации.</div>
+    </div>
+    <div class="mb-3">
+      <label for="id_password" class="form-label">{{ form.password.label }}</label>
+      {{ form.password }}
+      {% if form.password.errors %}
+        <div class="invalid-feedback d-block">{{ form.password.errors|join:" " }}</div>
+      {% endif %}
+    </div>
+    <button type="submit" class="btn btn-ask mb-3">Войти</button>
+    <p class="mb-0 small text-secondary">
+      Нет аккаунта? <a href="{% url 'signup' %}">Создать новый</a>
+    </p>
+  </form>
+{% endblock %}
