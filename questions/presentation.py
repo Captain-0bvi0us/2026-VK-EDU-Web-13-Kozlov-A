@@ -1,4 +1,4 @@
-from django.core.paginator import EmptyPage, Paginator
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
 from django.shortcuts import render
 
@@ -14,6 +14,8 @@ def paginate(objects_list, request, per_page=10):
         return paginator.page(1)
     try:
         return paginator.page(page_number)
+    except PageNotAnInteger:
+        return paginator.page(1)
     except EmptyPage:
         raise Http404("Страницы с таким номером не существует.")
 

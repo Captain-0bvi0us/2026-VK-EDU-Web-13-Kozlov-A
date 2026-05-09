@@ -64,82 +64,12 @@ class Command(BaseCommand):
         run_id = uuid.uuid4().hex[:8]
         pwd_hash = make_password("filldb")
 
-        tag_pks = []
-        for i in range(0, n_tags, BATCH):
-            chunk = [
-                Tag(
-                    name=(fake.word().capitalize()[:50] + f"-{run_id}-{j}")[:64],
-                    slug=f"t-{run_id}-{j}-{uuid.uuid4().hex[:8]}"[:64],
-                )
-                for j in range(i, min(i + BATCH, n_tags))
-            ]
-            with transaction.atomic():
-                Tag.objects.bulk_create(chunk, batch_size=BATCH)
-            tag_pks.extend(t.pk for t in chunk)
-
-        user_pks = []
-        for i in range(0, n_users, BATCH):
-            chunk = [
-                User(
-                    username=f"{run_id}_u{j}",
-                    email=f"{run_id}_u{j}@filldb.local",
-                    password=pwd_hash,
-                    first_name=(fake.first_name()[:150]),
-                    last_name=(fake.last_name()[:150]),
-                )
-                for j in range(i, min(i + BATCH, n_users))
-            ]
-            with transaction.atomic():
-                User.objects.bulk_create(chunk, batch_size=BATCH)
-            user_pks.extend(u.pk for u in chunk)
-
-        profiles = [Profile(user_id=uid) for uid in user_pks]
-        for i in range(0, len(profiles), BATCH):
-            with transaction.atomic():
-                Profile.objects.bulk_create(
-                    profiles[i : i + BATCH], batch_size=BATCH, ignore_conflicts=True
-                )
-
-        question_pks = []
-        for i in range(0, n_questions, BATCH):
-            chunk = [
-                Question(
-                    author_id=rng.choice(user_pks),
-                    title=fake.sentence(nb_words=6)[:250],
-                    text="\n\n".join(fake.paragraphs(nb=3)),
-                )
-                for _ in range(min(BATCH, n_questions - i))
-            ]
-            with transaction.atomic():
-                Question.objects.bulk_create(chunk, batch_size=BATCH)
-            question_pks.extend(q.pk for q in chunk)
-
-        Through = Question.tags.through
-        through_rows = []
-        for qpk in question_pks:
-            k = rng.randint(1, min(3, len(tag_pks)))
-            for tpk in rng.sample(tag_pks, k):
-                through_rows.append(Through(question_id=qpk, tag_id=tpk))
-        for i in range(0, len(through_rows), BATCH):
-            with transaction.atomic():
-                Through.objects.bulk_create(
-                    through_rows[i : i + BATCH], batch_size=BATCH, ignore_conflicts=True
-                )
-
-        answer_pks = []
-        for i in range(0, n_answers, BATCH):
-            chunk = [
-                Answer(
-                    question_id=rng.choice(question_pks),
-                    author_id=rng.choice(user_pks),
-                    text=fake.text(max_nb_chars=1500),
-                    is_correct=False,
-                )
-                for _ in range(min(BATCH, n_answers - i))
-            ]
-            with transaction.atomic():
-                Answer.objects.bulk_create(chunk, batch_size=BATCH)
-            answer_pks.extend(a.pk for a in chunk)
+        tag_pks = self._fill_tags(fake, run_id, n_tags)
+        user_pks = self._fill_users(fake, run_id, pwd_hash, n_users)
+        self._fill_profiles(user_pks)
+        question_pks = self._fill_questions(fake, rng, user_pks, n_questions)
+        self._fill_question_tags(rng, question_pks, tag_pks)
+        answer_pks = self._fill_answers(fake, rng, user_pks, question_pks, n_answers)
 
         self._bulk_unique_likes(
             QuestionLike,
@@ -157,6 +87,113 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS("Готово."))
+
+    def _fill_tags(self, fake: Faker, run_id: str, n_tags: int) -> list[int]:
+        tag_pks = []
+        for i in range(0, n_tags, BATCH):
+            chunk = [
+                Tag(
+                    name=(fake.word().capitalize()[:50] + f"-{run_id}-{j}")[:64],
+                    slug=f"t-{run_id}-{j}-{uuid.uuid4().hex[:8]}"[:64],
+                )
+                for j in range(i, min(i + BATCH, n_tags))
+            ]
+            with transaction.atomic():
+                Tag.objects.bulk_create(chunk, batch_size=BATCH)
+            tag_pks.extend(t.pk for t in chunk)
+        return tag_pks
+
+    def _fill_users(
+        self, fake: Faker, run_id: str, pwd_hash: str, n_users: int
+    ) -> list[int]:
+        user_pks = []
+        for i in range(0, n_users, BATCH):
+            chunk = [
+                User(
+                    username=f"{run_id}_u{j}",
+                    email=f"{run_id}_u{j}@filldb.local",
+                    password=pwd_hash,
+                    first_name=(fake.first_name()[:150]),
+                    last_name=(fake.last_name()[:150]),
+                )
+                for j in range(i, min(i + BATCH, n_users))
+            ]
+            with transaction.atomic():
+                User.objects.bulk_create(chunk, batch_size=BATCH)
+            user_pks.extend(u.pk for u in chunk)
+        return user_pks
+
+    def _fill_profiles(self, user_pks: list[int]) -> None:
+        profiles = [Profile(user_id=uid) for uid in user_pks]
+        for i in range(0, len(profiles), BATCH):
+            with transaction.atomic():
+                Profile.objects.bulk_create(
+                    profiles[i : i + BATCH], batch_size=BATCH, ignore_conflicts=True
+                )
+
+    def _fill_questions(
+        self,
+        fake: Faker,
+        rng: random.Random,
+        user_pks: list[int],
+        n_questions: int,
+    ) -> list[int]:
+        question_pks = []
+        for i in range(0, n_questions, BATCH):
+            chunk = [
+                Question(
+                    author_id=rng.choice(user_pks),
+                    title=fake.sentence(nb_words=6)[:250],
+                    text="\n\n".join(fake.paragraphs(nb=3)),
+                )
+                for _ in range(min(BATCH, n_questions - i))
+            ]
+            with transaction.atomic():
+                Question.objects.bulk_create(chunk, batch_size=BATCH)
+            question_pks.extend(q.pk for q in chunk)
+        return question_pks
+
+    def _fill_question_tags(
+        self,
+        rng: random.Random,
+        question_pks: list[int],
+        tag_pks: list[int],
+    ) -> None:
+        Through = Question.tags.through
+        through_rows = []
+        for qpk in question_pks:
+            k = rng.randint(1, min(3, len(tag_pks)))
+            for tpk in rng.sample(tag_pks, k):
+                through_rows.append(Through(question_id=qpk, tag_id=tpk))
+        for i in range(0, len(through_rows), BATCH):
+            with transaction.atomic():
+                Through.objects.bulk_create(
+                    through_rows[i : i + BATCH], batch_size=BATCH, ignore_conflicts=True
+                )
+
+    def _fill_answers(
+        self,
+        fake: Faker,
+        rng: random.Random,
+        user_pks: list[int],
+        question_pks: list[int],
+        n_answers: int,
+    ) -> list[int]:
+        answer_pks = []
+        for i in range(0, n_answers, BATCH):
+            chunk = [
+                Answer(
+                    question_id=rng.choice(question_pks),
+                    author_id=rng.choice(user_pks),
+                    text=fake.text(max_nb_chars=1500),
+                    is_correct=False,
+                )
+                for _ in range(min(BATCH, n_answers - i))
+            ]
+            with transaction.atomic():
+                Answer.objects.bulk_create(chunk, batch_size=BATCH)
+            answer_pks.extend(a.pk for a in chunk)
+        return answer_pks
 
     def _bulk_unique_likes(self, model, target, user_pks, entity_pks, row_fn):
         if target <= 0 or not user_pks or not entity_pks:
