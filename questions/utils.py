@@ -1,8 +1,9 @@
-from django.core.paginator import EmptyPage, Paginator
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404
 
 
 def paginate(objects_list, request, per_page=10):
+    """Пагинация: явные except для Paginator (ДЗ2), логика парса page — как раньше."""
     paginator = Paginator(objects_list, per_page)
     raw = request.GET.get("page", 1)
     try:
@@ -11,5 +12,7 @@ def paginate(objects_list, request, per_page=10):
         return paginator.page(1)
     try:
         return paginator.page(page_number)
+    except PageNotAnInteger:
+        return paginator.page(1)
     except EmptyPage:
         raise Http404("Страницы с таким номером не существует.")
