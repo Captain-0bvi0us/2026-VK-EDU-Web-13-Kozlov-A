@@ -198,60 +198,32 @@ python manage.py createsuperuser
 
 ## Структура проекта
 
-
-
 | Путь | Назначение |
-
 |------|------------|
-
 | `application/` | `settings.py`, корневой `urls.py`; SQLite/Postgres из env; debug-toolbar при `DEBUG` |
-
 | `core/` | Логин, регистрация, профиль, logout; `/user/<username>/`; `auth_utils`, `sidebar_context`, сигнал `Profile`; шаблоны и статика; templatetag пагинации |
-
 | `questions/` | Модели и голоса (**`value` ±1**), вьюхи списков и вопроса, ask/answer, **JSON**-голосование и верный ответ; `presentation` (в т.ч. пагинация списков), `like_annotations` (**`viewer_vote`**); `fill_db` |
-
 | `manage.py`, `requirements.txt`, Docker-файлы | см. корень репозитория |
-
-
 
 ### Маршруты (именованные)
 
-
-
-| URL | Имя в шаблонах `{% url %}` |
-
-|-----|----------------------------|
-
+| URL | Имя в шаблонах (`{% url %}`) |
+|-----|------------------------------|
 | `/` | `index` |
-
 | `/hot/` | `hot` |
-
 | `/tag/…/` | `tag` (аргумент `tag`) |
-
 | `/question/…/` | `question_detail` (аргумент `pk`) |
-
 | `/ask/` | `ask` |
-
 | `/question/…/vote/` | `question_vote` (POST, **AJAX JSON**) |
-
 | `/answer/…/vote/` | `answer_vote` (POST, **AJAX JSON**) |
-
 | `/answer/…/correct/` | `mark_answer_correct` (POST, **AJAX JSON**, автор вопроса) |
-
 | `/logout/` | `logout` (POST) |
-
 | `/user/<username>/` | `public_user` |
-
 | `/login/` | `login` |
-
 | `/signup/` | `signup` |
-
 | `/profile/` | `profile` |
-
 | `/layout/` | `layout` (демо каркаса) |
-
 | `/admin/` | админка Django |
-
 
 
 Списки вопросов и ответы на странице вопроса читаются из БД; пагинация — **`questions.presentation.paginate`** (лишний номер страницы — **404**); компактные номера страниц — **`elided_page_numbers`** в `core/templatetags/pagination_tags`.
