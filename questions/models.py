@@ -33,7 +33,7 @@ class QuestionQuerySet(models.QuerySet):
             .values("total")[:1]
         )
         return (
-            self.select_related("author")
+            self.select_related("author", "author__profile")
             .prefetch_related("tags")
             .annotate(
                 score=Coalesce(
@@ -127,7 +127,7 @@ class AnswerQuerySet(models.QuerySet):
         )
         return (
             self.filter(question=question)
-            .select_related("author")
+            .select_related("author", "author__profile")
             .annotate(
                 score=Coalesce(
                     Subquery(vote_sum, output_field=IntegerField()),

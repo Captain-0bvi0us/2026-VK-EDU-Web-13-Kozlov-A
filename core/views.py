@@ -114,7 +114,9 @@ def logout_view(request):
 
 
 def public_user_view(request, username: str):
-    user = get_object_or_404(User, username=username)
+    user = get_object_or_404(
+        User.objects.select_related("profile"), username=username
+    )
     Profile.objects.get_or_create(user=user)
     q_n = user.questions.count()
     a_n = user.answers.count()

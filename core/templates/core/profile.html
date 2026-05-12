@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load avatar_tags %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -18,11 +19,7 @@
       <p class="form-label mb-2">Текущий аватар</p>
       <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-3">
         <div class="flex-shrink-0 text-center text-sm-start">
-          {% if user.profile.avatar %}
-            <img class="avatar-preview d-block mx-auto mx-sm-0 rounded-1" src="{{ user.profile.avatar.url }}" width="120" height="120" alt="Превью аватара">
-          {% else %}
-            <img class="avatar-preview d-block mx-auto mx-sm-0" src="{% static 'core/img/avatar-placeholder.svg' %}" width="120" height="120" alt="Превью аватара">
-          {% endif %}
+            <img class="avatar-preview d-block mx-auto mx-sm-0 rounded-1" src="{% user_avatar_src user %}" width="120" height="120" alt="Превью аватара">
         </div>
         {% if user.profile.avatar %}
           <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center align-items-sm-start gap-2 pt-sm-1">

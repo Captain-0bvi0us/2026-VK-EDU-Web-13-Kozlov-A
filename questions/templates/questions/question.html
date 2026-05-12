@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load avatar_tags %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -8,7 +9,7 @@
   <article class="question-card mb-4">
     <div class="row g-3">
       <div class="col-auto d-flex flex-column align-items-center gap-2">
-        <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="56" height="56" alt="">
+        <img src="{% user_avatar_src question.author %}" class="rounded-3 cq-avatar" width="56" height="56" alt="{{ question.author_display }}">
         <div class="vote-box {% if question.viewer_vote == 1 %}is-up{% elif question.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за вопрос">
           {% if user.is_authenticated %}
             {% if question.author_id == user.id %}
@@ -50,7 +51,7 @@
     <article id="answer-{{ answer.pk }}" class="question-card mb-3 js-answer-row" data-answer-id="{{ answer.pk }}">
       <div class="row g-3">
         <div class="col-auto d-flex flex-column align-items-center gap-2">
-          <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
+          <img src="{% user_avatar_src answer.author %}" class="rounded-3 cq-avatar" width="48" height="48" alt="{{ answer.author_display }}">
           <div class="vote-box {% if answer.viewer_vote == 1 %}is-up{% elif answer.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за ответ">
             {% if user.is_authenticated %}
               {% if answer.author_id == user.id %}

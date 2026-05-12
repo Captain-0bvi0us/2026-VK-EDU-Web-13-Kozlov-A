@@ -96,6 +96,12 @@ body {
   box-shadow: 0 2px 8px rgba(58, 37, 25, 0.12);
 }
 
+/* Аватары в карточках вопросов/ответов, сайдбаре и т.п. (без этого img с width/height искажает пропорции) */
+.cq-avatar {
+  object-fit: cover;
+  object-position: center;
+}
+
 .user-block .nav-link {
   padding: 0.2rem 0.5rem;
   font-size: 0.9rem;

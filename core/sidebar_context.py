@@ -26,7 +26,8 @@ def popular_tags_for_sidebar():
 
 def best_members_for_sidebar():
     qs = (
-        User.objects.annotate(
+        User.objects.select_related("profile")
+        .annotate(
             _q=Count("questions", distinct=True),
             _a=Count("answers", distinct=True),
         )
@@ -34,7 +35,7 @@ def best_members_for_sidebar():
         .filter(activity__gt=0)
         .order_by("-activity", "username")[:BEST_MEMBERS_LIMIT]
     )
-    return [{"username": u.get_username()} for u in qs]
+    return list(qs)
 
 
 def sidebar_context(request):

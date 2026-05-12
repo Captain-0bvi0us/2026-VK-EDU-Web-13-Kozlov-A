@@ -1,8 +1,9 @@
 {% load static %}
+{% load avatar_tags %}
 <article class="question-card">
   <div class="row g-3">
     <div class="col-auto d-flex flex-column align-items-center gap-2">
-      <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
+      <img src="{% user_avatar_src question.author %}" class="rounded-3 cq-avatar" width="48" height="48" alt="{{ question.author_display }}">
       <div class="vote-box {% if question.viewer_vote == 1 %}is-up{% elif question.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование">
         {% if user.is_authenticated %}
           {% if question.author_id == user.id %}

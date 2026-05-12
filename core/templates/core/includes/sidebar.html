@@ -1,3 +1,4 @@
+{% load avatar_tags %}
 <div class="sidebar-card p-3 mb-3">
   <h2>Популярные теги</h2>
   <div class="tag-cloud">
@@ -11,10 +12,11 @@
 <div class="sidebar-card p-3">
   <h2>Лучшие участники</h2>
   {% if best_members %}
-    <ol class="best-members">
-      {% for m in best_members %}
-        <li>
-          <a href="{% url 'public_user' m.username %}" class="text-decoration-none">{{ m.username }}</a>
+    <ol class="best-members list-unstyled mb-0 ps-0">
+      {% for u in best_members %}
+        <li class="d-flex align-items-center gap-2 mb-2">
+          <img class="flex-shrink-0 rounded-1 cq-avatar" src="{% user_avatar_src u %}" width="32" height="32" alt="{{ u.username }}">
+          <a href="{% url 'public_user' u.username %}" class="text-decoration-none">{{ u.username }}</a>
         </li>
       {% endfor %}
     </ol>

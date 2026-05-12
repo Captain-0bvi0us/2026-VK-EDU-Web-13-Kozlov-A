@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load avatar_tags %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -7,11 +8,7 @@
   <h1 class="page-title h2 mb-3">{{ profile_user_display }}</h1>
   <p class="text-secondary mb-3">Логин: <strong>{{ profile_user.username }}</strong></p>
   <div class="d-flex align-items-center gap-3 mb-4">
-    {% if profile_user.profile.avatar %}
-      <img src="{{ profile_user.profile.avatar.url }}" width="80" height="80" class="rounded-2" alt="">
-    {% else %}
-      <img src="{% static 'core/img/avatar-placeholder.svg' %}" width="80" height="80" alt="">
-    {% endif %}
+    <img src="{% user_avatar_src profile_user %}" width="80" height="80" class="rounded-2 cq-avatar" alt="{{ profile_user_display }}">
   </div>
   <ul class="list-unstyled">
     <li>Вопросов задано: <strong>{{ questions_count }}</strong></li>
