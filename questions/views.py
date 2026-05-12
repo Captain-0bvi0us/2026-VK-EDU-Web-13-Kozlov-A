@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.auth_utils import get_safe_redirect_url
-
 from .forms import AnswerForm, QuestionForm
-from .models import Answer, AnswerLike, Question, QuestionLike, Tag
 from .like_annotations import annotate_viewer_answer_likes, annotate_viewer_question_likes
+from .models import Answer, AnswerLike, Question, QuestionLike, Tag, VoteSign
 from .presentation import paginate, render_paginated_question_list
 
 
@@ -18,6 +19,23 @@ def _page_index_for_answer(answer_qs, answer_pk: int, per_page: int) -> int:
     except ValueError:
         return 1
     return idx // per_page + 1
+
+
+def _vote_score_and_user_vote(*, model, object_kw, user):
+    agg = model.objects.filter(**object_kw).aggregate(
+        s=Coalesce(Sum("value"), Value(0))
+    )
+    score = agg["s"]
+    row = model.objects.filter(user=user, **object_kw).first()
+    vote = row.value if row else 0
+    return score, vote
+
+
+def _json_error(status: int, code: str, message: str | None = None):
+    payload = {"ok": False, "error": code}
+    if message:
+        payload["message"] = message
+    return JsonResponse(payload, status=status)
 
 
 def index(request):
@@ -103,64 +121,114 @@ def question_detail(request, pk):
     )
 
 
-@login_required
 @require_POST
 def question_vote(request, pk):
+    if not request.user.is_authenticated:
+        return _json_error(401, "authentication_required")
+
     question = get_object_or_404(Question, pk=pk)
-    fallback = question.get_absolute_url()
-    next_url = get_safe_redirect_url(
-        request,
-        request.POST.get("next"),
-        fallback=fallback,
-    )
     if question.author_id == request.user.id:
-        return redirect(next_url)
+        return _json_error(403, "cannot_vote_own")
+
     action = request.POST.get("action")
-    if action == "up":
-        QuestionLike.objects.get_or_create(user=request.user, question=question)
-    elif action == "down":
-        QuestionLike.objects.filter(user=request.user, question=question).delete()
-    return redirect(next_url)
+    if action not in ("up", "down"):
+        return _json_error(400, "invalid_action")
+
+    row = QuestionLike.objects.filter(
+        user=request.user, question=question
+    ).first()
+    want_up = action == "up"
+
+    if row is None:
+        QuestionLike.objects.create(
+            user=request.user,
+            question=question,
+            value=VoteSign.UP if want_up else VoteSign.DOWN,
+        )
+    elif row.value == VoteSign.UP:
+        if want_up:
+            row.delete()
+        else:
+            row.value = VoteSign.DOWN
+            row.save(update_fields=["value"])
+    else:
+        if want_up:
+            row.value = VoteSign.UP
+            row.save(update_fields=["value"])
+        else:
+            row.delete()
+
+    score, vote = _vote_score_and_user_vote(
+        model=QuestionLike,
+        object_kw={"question": question},
+        user=request.user,
+    )
+    return JsonResponse({"ok": True, "score": score, "vote": vote})
 
 
-@login_required
 @require_POST
 def answer_vote(request, pk):
+    if not request.user.is_authenticated:
+        return _json_error(401, "authentication_required")
+
     answer = get_object_or_404(Answer.objects.select_related("question"), pk=pk)
-    q = answer.question
-    fallback = q.get_absolute_url()
-    next_url = get_safe_redirect_url(
-        request,
-        request.POST.get("next"),
-        fallback=fallback,
-    )
     if answer.author_id == request.user.id:
-        return redirect(next_url)
+        return _json_error(403, "cannot_vote_own")
+
     action = request.POST.get("action")
-    if action == "up":
-        AnswerLike.objects.get_or_create(user=request.user, answer=answer)
-    elif action == "down":
-        AnswerLike.objects.filter(user=request.user, answer=answer).delete()
-    return redirect(next_url)
+    if action not in ("up", "down"):
+        return _json_error(400, "invalid_action")
+
+    row = AnswerLike.objects.filter(user=request.user, answer=answer).first()
+    want_up = action == "up"
+
+    if row is None:
+        AnswerLike.objects.create(
+            user=request.user,
+            answer=answer,
+            value=VoteSign.UP if want_up else VoteSign.DOWN,
+        )
+    elif row.value == VoteSign.UP:
+        if want_up:
+            row.delete()
+        else:
+            row.value = VoteSign.DOWN
+            row.save(update_fields=["value"])
+    else:
+        if want_up:
+            row.value = VoteSign.UP
+            row.save(update_fields=["value"])
+        else:
+            row.delete()
+
+    score, vote = _vote_score_and_user_vote(
+        model=AnswerLike,
+        object_kw={"answer": answer},
+        user=request.user,
+    )
+    return JsonResponse({"ok": True, "score": score, "vote": vote})
 
 
-@login_required
 @require_POST
 def mark_answer_correct(request, pk):
+    if not request.user.is_authenticated:
+        return _json_error(401, "authentication_required")
+
     answer = get_object_or_404(Answer.objects.select_related("question"), pk=pk)
     question = answer.question
-    fallback = question.get_absolute_url()
-    next_url = get_safe_redirect_url(
-        request,
-        request.POST.get("next"),
-        fallback=fallback,
-    )
     if question.author_id != request.user.id:
-        return redirect(next_url)
+        return _json_error(403, "forbidden")
+
     Answer.objects.filter(question=question).update(is_correct=False)
     answer.is_correct = True
     answer.save(update_fields=["is_correct"])
-    return redirect(next_url)
+    return JsonResponse(
+        {
+            "ok": True,
+            "correct_answer_id": answer.pk,
+            "question_id": question.pk,
+        }
+    )
 
 
 @login_required
@@ -180,3 +248,4 @@ def ask(request):
             "form": form,
         },
     )
+

@@ -9,7 +9,10 @@
   <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'core/css/cupofq.css' %}">
 </head>
-<body>
+<body
+  data-login-url="{% url 'login' %}"
+  data-auth="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+>
   <div class="site-wrap">
     {% include "core/includes/header.html" %}
     <main class="site-main">
@@ -26,7 +29,9 @@
     </main>
     {% include "core/includes/footer.html" %}
   </div>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="{% static 'core/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'core/js/cupofq.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

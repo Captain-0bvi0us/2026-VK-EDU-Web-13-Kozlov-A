@@ -8,7 +8,7 @@ from django.db import transaction
 from faker import Faker
 
 from core.models import Profile
-from questions.models import Answer, AnswerLike, Question, QuestionLike, Tag
+from questions.models import Answer, AnswerLike, Question, QuestionLike, Tag, VoteSign
 
 User = get_user_model()
 BATCH = 4000
@@ -76,14 +76,22 @@ class Command(BaseCommand):
             n_q_likes,
             user_pks,
             question_pks,
-            lambda u, q: QuestionLike(user_id=u, question_id=q),
+            lambda u, q: QuestionLike(
+                user_id=u,
+                question_id=q,
+                value=VoteSign.UP if rng.random() < 0.55 else VoteSign.DOWN,
+            ),
         )
         self._bulk_unique_likes(
             AnswerLike,
             n_a_likes,
             user_pks,
             answer_pks,
-            lambda u, a: AnswerLike(user_id=u, answer_id=a),
+            lambda u, a: AnswerLike(
+                user_id=u,
+                answer_id=a,
+                value=VoteSign.UP if rng.random() < 0.55 else VoteSign.DOWN,
+            ),
         )
 
         self.stdout.write(self.style.SUCCESS("Готово."))

@@ -4,35 +4,26 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+  <div id="question-page" data-is-question-author="{% if user.is_authenticated and user.id == question.author_id %}1{% else %}0{% endif %}">
   <article class="question-card mb-4">
     <div class="row g-3">
       <div class="col-auto d-flex flex-column align-items-center gap-2">
         <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="56" height="56" alt="">
-        <div class="vote-box {% if question.viewer_has_like %}is-up{% endif %}" role="group" aria-label="Голосование за вопрос">
+        <div class="vote-box {% if question.viewer_vote == 1 %}is-up{% elif question.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за вопрос">
           {% if user.is_authenticated %}
             {% if question.author_id == user.id %}
               <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой вопрос" aria-label="Лайк">▲</button>
-              <span class="score">{{ question.score }}</span>
-              <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Снять лайк">▼</button>
+              <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Дизлайк">▼</button>
             {% else %}
-              <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <input type="hidden" name="action" value="up">
-                <button type="submit" class="btn-vote btn-vote-up" {% if question.viewer_has_like %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
-              </form>
-              <span class="score">{{ question.score }}</span>
-              <form method="post" action="{% url 'question_vote' question.pk %}" class="d-inline">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <input type="hidden" name="action" value="down">
-                <button type="submit" class="btn-vote btn-vote-down" aria-label="Снять лайк">▼</button>
-              </form>
+              <button type="button" class="btn-vote btn-vote-up js-vote-question-up" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == 1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+              <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down js-vote-question-down" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == -1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
             {% endif %}
           {% else %}
             <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
-            <span class="score">{{ question.score }}</span>
-            <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Снять лайк">▼</button>
+            <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Дизлайк">▼</button>
           {% endif %}
         </div>
       </div>
@@ -56,35 +47,25 @@
   <h2 class="h5 page-title mb-3">Ответы</h2>
 
   {% for answer in page.object_list %}
-    <article id="answer-{{ answer.pk }}" class="question-card mb-3">
+    <article id="answer-{{ answer.pk }}" class="question-card mb-3 js-answer-row" data-answer-id="{{ answer.pk }}">
       <div class="row g-3">
         <div class="col-auto d-flex flex-column align-items-center gap-2">
           <img src="{% static 'core/img/avatar-placeholder.svg' %}" class="rounded-3" width="48" height="48" alt="">
-          <div class="vote-box {% if answer.viewer_has_like %}is-up{% endif %}" role="group" aria-label="Голосование за ответ">
+          <div class="vote-box {% if answer.viewer_vote == 1 %}is-up{% elif answer.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за ответ">
             {% if user.is_authenticated %}
               {% if answer.author_id == user.id %}
                 <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой ответ" aria-label="Лайк">▲</button>
-                <span class="score">{{ answer.score }}</span>
-                <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой ответ" aria-label="Снять лайк">▼</button>
+                <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+                <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой ответ" aria-label="Дизлайк">▼</button>
               {% else %}
-                <form method="post" action="{% url 'answer_vote' answer.pk %}" class="d-inline">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <input type="hidden" name="action" value="up">
-                  <button type="submit" class="btn-vote btn-vote-up" {% if answer.viewer_has_like %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
-                </form>
-                <span class="score">{{ answer.score }}</span>
-                <form method="post" action="{% url 'answer_vote' answer.pk %}" class="d-inline">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <input type="hidden" name="action" value="down">
-                  <button type="submit" class="btn-vote btn-vote-down" aria-label="Снять лайк">▼</button>
-                </form>
+                <button type="button" class="btn-vote btn-vote-up js-vote-answer-up" data-post-url="{% url 'answer_vote' answer.pk %}" {% if answer.viewer_vote == 1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+                <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+                <button type="button" class="btn-vote btn-vote-down js-vote-answer-down" data-post-url="{% url 'answer_vote' answer.pk %}" {% if answer.viewer_vote == -1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
               {% endif %}
             {% else %}
               <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
-              <span class="score">{{ answer.score }}</span>
-              <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Снять лайк">▼</button>
+              <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Дизлайк">▼</button>
             {% endif %}
           </div>
         </div>
@@ -95,16 +76,12 @@
             <span>·</span>
             <span>{{ answer.created_display }}</span>
           </div>
-          <div class="form-check">
+          <div class="form-check js-correct-wrap">
             {% if answer.is_correct %}
               <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" checked disabled>
               <label class="form-check-label small fw-semibold text-success" for="correct-{{ answer.id }}">Правильный ответ</label>
             {% elif user.is_authenticated and user.id == question.author_id %}
-              <form method="post" action="{% url 'mark_answer_correct' answer.pk %}" class="d-flex align-items-center gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <button type="submit" class="btn btn-link btn-sm text-start p-0 text-decoration-none">Отметить как правильный</button>
-              </form>
+              <button type="button" class="btn btn-link btn-sm text-start p-0 text-decoration-none js-mark-correct" data-post-url="{% url 'mark_answer_correct' answer.pk %}">Отметить как правильный</button>
             {% else %}
               <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" disabled>
               <label class="form-check-label small text-muted" for="correct-{{ answer.id }}">
@@ -152,4 +129,5 @@
       <button type="button" class="btn btn-primary" disabled title="Войдите, чтобы отправить ответ">Отправить ответ</button>
     {% endif %}
   </section>
+  </div>
 {% endblock %}

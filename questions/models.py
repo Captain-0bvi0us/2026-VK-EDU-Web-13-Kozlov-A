@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, IntegerField, OuterRef, Subquery, Sum, Value
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import formats, timezone
 
@@ -25,11 +26,21 @@ class Tag(models.Model):
 
 class QuestionQuerySet(models.QuerySet):
     def with_list_defaults(self):
+        vote_sum = (
+            QuestionLike.objects.filter(question_id=OuterRef("pk"))
+            .values("question_id")
+            .annotate(total=Sum("value"))
+            .values("total")[:1]
+        )
         return (
             self.select_related("author")
             .prefetch_related("tags")
             .annotate(
-                score=Count("question_likes", distinct=True),
+                score=Coalesce(
+                    Subquery(vote_sum, output_field=IntegerField()),
+                    Value(0),
+                    output_field=IntegerField(),
+                ),
                 answer_count=Count("answers", distinct=True),
             )
         )
@@ -108,10 +119,22 @@ class Question(models.Model):
 
 class AnswerQuerySet(models.QuerySet):
     def for_question(self, question: "Question"):
+        vote_sum = (
+            AnswerLike.objects.filter(answer_id=OuterRef("pk"))
+            .values("answer_id")
+            .annotate(total=Sum("value"))
+            .values("total")[:1]
+        )
         return (
             self.filter(question=question)
             .select_related("author")
-            .annotate(score=Count("answer_likes", distinct=True))
+            .annotate(
+                score=Coalesce(
+                    Subquery(vote_sum, output_field=IntegerField()),
+                    Value(0),
+                    output_field=IntegerField(),
+                ),
+            )
             .order_by("-is_correct", "created_at")
         )
 
@@ -157,6 +180,11 @@ class Answer(models.Model):
         return user_display_name(self.author)
 
 
+class VoteSign(models.IntegerChoices):
+    DOWN = -1, "дизлайк"
+    UP = 1, "лайк"
+
+
 class QuestionLike(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -170,6 +198,11 @@ class QuestionLike(models.Model):
         related_name="question_likes",
         verbose_name="вопрос",
     )
+    value = models.SmallIntegerField(
+        "голос",
+        choices=VoteSign.choices,
+        default=VoteSign.UP,
+    )
     created_at = models.DateTimeField("дата", auto_now_add=True)
 
     class Meta:
@@ -178,7 +211,7 @@ class QuestionLike(models.Model):
         unique_together = [["user", "question"]]
 
     def __str__(self) -> str:
-        return f"{self.user} → {self.question_id}"
+        return f"{self.user} → {self.question_id} ({self.value:+d})"
 
 
 class AnswerLike(models.Model):
@@ -194,6 +227,11 @@ class AnswerLike(models.Model):
         related_name="answer_likes",
         verbose_name="ответ",
     )
+    value = models.SmallIntegerField(
+        "голос",
+        choices=VoteSign.choices,
+        default=VoteSign.UP,
+    )
     created_at = models.DateTimeField("дата", auto_now_add=True)
 
     class Meta:
@@ -202,4 +240,4 @@ class AnswerLike(models.Model):
         unique_together = [["user", "answer"]]
 
     def __str__(self) -> str:
-        return f"{self.user} → ответ {self.answer_id}"
+        return f"{self.user} → ответ {self.answer_id} ({self.value:+d})"
