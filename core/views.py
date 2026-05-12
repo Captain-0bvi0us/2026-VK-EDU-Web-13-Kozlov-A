@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
@@ -62,11 +63,16 @@ def signup_view(request):
         login(request, user)
         return redirect("/")
     incoming = request.FILES.get("avatar")
-    if incoming:
+    if incoming and not form.errors.get("avatar"):
         delete_staged(request.session.pop(SESSION_KEY_STAGED_AVATAR, None))
-        request.session[SESSION_KEY_STAGED_AVATAR] = stage_signup_avatar(
-            incoming, request.session.session_key or "anon"
-        )
+        try:
+            request.session[SESSION_KEY_STAGED_AVATAR] = stage_signup_avatar(
+                incoming, request.session.session_key or "anon"
+            )
+        except ValidationError as exc:
+            form.add_error("avatar", exc)
+    elif incoming and form.errors.get("avatar"):
+        delete_staged(request.session.pop(SESSION_KEY_STAGED_AVATAR, None))
     staged = request.session.get(SESSION_KEY_STAGED_AVATAR)
     return render(
         request,

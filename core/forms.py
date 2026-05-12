@@ -8,8 +8,15 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 
+from .avatar_validators import (
+    AVATAR_MAX_BYTES,
+    avatar_extension_validator,
+    validate_avatar_max_size,
+)
 from .models import Profile
 from .signup_staging import delete_staged
+
+_AVATAR_HELP_MB = AVATAR_MAX_BYTES // (1024 * 1024)
 
 
 class LoginForm(AuthenticationForm):
@@ -108,11 +115,20 @@ class SignupForm(forms.Form):
     avatar = forms.ImageField(
         label="Аватар",
         required=False,
+        validators=[avatar_extension_validator],
         widget=forms.FileInput(
-            attrs={"class": "form-control", "accept": "image/*"}
+            attrs={"class": "form-control", "accept": "image/jpeg,image/png,.jpg,.jpeg,.png"}
         ),
-        help_text="Необязательно. JPEG или PNG.",
+        help_text=(
+            f"Необязательно. Только JPEG или PNG, не больше {_AVATAR_HELP_MB} МБ."
+        ),
     )
+
+    def clean_avatar(self):
+        f = self.cleaned_data.get("avatar")
+        if f:
+            validate_avatar_max_size(f)
+        return f
 
     def clean_username(self):
         username = self.cleaned_data["username"]
@@ -164,10 +180,14 @@ class ProfileEditForm(forms.ModelForm):
     avatar = forms.ImageField(
         label="Новый аватар",
         required=False,
+        validators=[avatar_extension_validator],
         widget=forms.FileInput(
-            attrs={"class": "form-control", "accept": "image/*"}
+            attrs={"class": "form-control", "accept": "image/jpeg,image/png,.jpg,.jpeg,.png"}
         ),
-        help_text="Выберите файл, чтобы заменить текущее фото. Квадратное изображение смотрится лучше.",
+        help_text=(
+            f"Заменить фото. Только JPEG или PNG, не больше {_AVATAR_HELP_MB} МБ. "
+            "Квадратное изображение смотрится лучше."
+        ),
     )
     remove_avatar = forms.BooleanField(
         label="Удалить текущий аватар",
@@ -207,6 +227,12 @@ class ProfileEditForm(forms.ModelForm):
         self._profile = profile
         super().__init__(*args, instance=user, **kwargs)
         self.fields["avatar"].initial = profile.avatar
+
+    def clean_avatar(self):
+        f = self.cleaned_data.get("avatar")
+        if f:
+            validate_avatar_max_size(f)
+        return f
 
     def clean(self):
         data = super().clean()
