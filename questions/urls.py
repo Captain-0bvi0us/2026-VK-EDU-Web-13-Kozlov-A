@@ -11,4 +11,5 @@ urlpatterns = [
     path("answer/<int:pk>/vote/", views.answer_vote, name="answer_vote"),
     path("answer/<int:pk>/correct/", views.mark_answer_correct, name="mark_answer_correct"),
     path("ask/", views.ask, name="ask"),
+    path("api/search/suggest/", views.search_suggest, name="search_suggest"),
 ]

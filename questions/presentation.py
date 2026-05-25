@@ -5,6 +5,15 @@ from django.shortcuts import render
 from .like_annotations import annotate_viewer_question_likes
 
 
+def page_index_for_answer(answer_qs, answer_pk: int, per_page: int) -> int:
+    ids = list(answer_qs.values_list("pk", flat=True))
+    try:
+        idx = ids.index(answer_pk)
+    except ValueError:
+        return 1
+    return idx // per_page + 1
+
+
 def paginate(objects_list, request, per_page=10):
     paginator = Paginator(objects_list, per_page)
     raw = request.GET.get("page", 1)

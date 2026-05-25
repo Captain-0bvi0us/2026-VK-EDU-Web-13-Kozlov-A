@@ -74,6 +74,36 @@ body {
   pointer-events: none;
 }
 
+.search-suggest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  background: #fffefb;
+  border: 1px solid var(--cq-cream-dark);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(58, 37, 25, 0.12);
+  z-index: 1080;
+  overflow: hidden;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.search-suggest > li > a {
+  color: var(--cq-chocolate);
+}
+
+.search-suggest > li > a:hover {
+  background: var(--cq-cream);
+}
+
+.search-suggest mark {
+  background: rgba(196, 101, 74, 0.18);
+  color: inherit;
+  padding: 0 0.1em;
+  border-radius: 0.25rem;
+}
+
 .btn-ask {
   --bs-btn-bg: var(--cq-terracotta);
   --bs-btn-border-color: var(--cq-terracotta);

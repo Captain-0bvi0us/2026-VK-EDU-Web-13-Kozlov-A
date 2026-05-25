@@ -5,7 +5,13 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  <div id="question-page" data-is-question-author="{% if user.is_authenticated and user.id == question.author_id %}1{% else %}0{% endif %}">
+  <div id="question-page"
+       data-question-id="{{ question.pk }}"
+       data-current-page="{{ page.number }}"
+       data-per-page="{{ page.paginator.per_page }}"
+       data-answer-count="{{ page.paginator.count }}"
+       data-current-username="{% if user.is_authenticated %}{{ user.username }}{% endif %}"
+       data-is-question-author="{% if user.is_authenticated and user.id == question.author_id %}1{% else %}0{% endif %}">
   <article class="question-card mb-4">
     <div class="row g-3">
       <div class="col-auto d-flex flex-column align-items-center gap-2">
@@ -47,6 +53,7 @@
 
   <h2 class="h5 page-title mb-3">Ответы</h2>
 
+  <div id="answers-list">
   {% for answer in page.object_list %}
     <article id="answer-{{ answer.pk }}" class="question-card mb-3 js-answer-row" data-answer-id="{{ answer.pk }}">
       <div class="row g-3">
@@ -98,8 +105,9 @@
       </div>
     </article>
   {% empty %}
-    <p class="text-secondary mb-4">Пока нет ни одного ответа к этому вопросу.</p>
+    <p class="text-secondary mb-4 js-no-answers">Пока нет ни одного ответа к этому вопросу.</p>
   {% endfor %}
+  </div>
 
   {% include "core/includes/pagination.html" with page=page %}
 
@@ -131,4 +139,13 @@
     {% endif %}
   </section>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    window.CupOfQ = window.CupOfQ || {};
+    window.CupOfQ.placeholderAvatar = "{% static 'core/img/avatar-placeholder.svg' %}";
+  </script>
+  <script src="https://unpkg.com/centrifuge@5.3.4/dist/centrifuge.js"></script>
+  <script src="{% static 'core/js/question_realtime.js' %}" defer></script>
 {% endblock %}

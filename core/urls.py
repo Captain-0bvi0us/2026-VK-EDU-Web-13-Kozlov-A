@@ -11,4 +11,5 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("user/<str:username>/", views.public_user_view, name="public_user"),
     path("layout/", views.layout_demo, name="layout"),
+    path("api/centrifugo/token/", views.centrifugo_token_view, name="centrifugo_token"),
 ]

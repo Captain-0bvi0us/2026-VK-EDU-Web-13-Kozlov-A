@@ -14,10 +14,48 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - cupofq_redisdata:/data
+    ports:
+      - "${REDIS_PUBLISH_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    command: centrifugo --config=/centrifugo/config.json
+    # Секреты берём из .env.docker (не из корневого .env — иначе ключи пустые)
+    env_file:
+      - .env.docker
+    volumes:
+      - ./centrifugo:/centrifugo:ro
+    ports:
+      - "${CENTRIFUGO_PUBLISH_PORT:-8001}:8000"
+    restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev:latest
+    environment:
+      MAILDEV_SMTP_PORT: "1025"
+      MAILDEV_WEB_PORT: "1080"
+    ports:
+      - "${MAILDEV_SMTP_PUBLISH_PORT:-1025}:1025"
+      - "${MAILDEV_WEB_PUBLISH_PORT:-1080}:1080"
+    restart: unless-stopped
+
   web:
     build: .
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -30,11 +68,63 @@ services:
       DJANGO_RUN_IN_DOCKER: "1"
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      CENTRIFUGO_API_URL: http://centrifugo:8000/api
+      CENTRIFUGO_WS_URL: ws://localhost:${CENTRIFUGO_PUBLISH_PORT:-8001}/connection/websocket
+      EMAIL_HOST: maildev
+      EMAIL_PORT: "1025"
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py runserver 0.0.0.0:8000"
     restart: unless-stopped
 
+  celery_worker:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - cupofq_media:/app/media
+    env_file:
+      - .env.docker
+    environment:
+      DJANGO_RUN_IN_DOCKER: "1"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      CENTRIFUGO_API_URL: http://centrifugo:8000/api
+      EMAIL_HOST: maildev
+      EMAIL_PORT: "1025"
+    command: celery -A application worker -l info
+    restart: unless-stopped
+
+  celery_beat:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - cupofq_media:/app/media
+    env_file:
+      - .env.docker
+    environment:
+      DJANGO_RUN_IN_DOCKER: "1"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    command: celery -A application beat -l info -S redbeat.RedBeatScheduler
+    restart: unless-stopped
+
 volumes:
   cupofq_pgdata:
   cupofq_media:
+  cupofq_redisdata:

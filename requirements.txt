@@ -24,3 +24,17 @@ tzdata==2025.3
 
 #Панель отладки
 django-debug-toolbar==5.1.0
+
+#Redis (брокер celery и cache backend django)
+redis==5.2.1
+django-redis==5.4.0
+
+#Celery + расписание в redis
+celery==5.4.0
+celery-redbeat==2.2.0
+
+#HTTP-клиент (centrifugo API)
+requests==2.32.3
+
+#JWT для connection-token Centrifugo
+PyJWT==2.9.0

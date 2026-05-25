@@ -1,11 +1,15 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from .auth_utils import get_safe_logout_redirect, get_safe_redirect_url
+from .centrifugo import make_connection_token, question_channel
 from .forms import LoginForm, ProfileEditForm, SignupForm
 from .models import Profile
 from .signup_staging import SESSION_KEY_STAGED_AVATAR, delete_staged, stage_signup_avatar
@@ -14,6 +18,7 @@ from .utils import user_display_name
 User = get_user_model()
 
 
+@ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     next_raw = request.POST.get("next") or request.GET.get("next") or ""
@@ -39,6 +44,7 @@ def login_view(request):
     )
 
 
+@ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
 def signup_view(request):
     if request.user.is_authenticated:
@@ -146,4 +152,28 @@ def layout_demo(request):
         {
             "page_title": "Базовый шаблон — CupOfQ",
         },
+    )
+
+
+@require_GET
+def centrifugo_token_view(request):
+    question_id_raw = (request.GET.get("question_id") or "").strip()
+    if not question_id_raw.isdigit():
+        return JsonResponse({"error": "question_id required"}, status=400)
+
+    question_id = int(question_id_raw)
+    if request.user.is_authenticated:
+        sub = str(request.user.pk)
+    else:
+        sub = ""
+
+    channel = question_channel(question_id)
+    token = make_connection_token(sub, subs={channel: {}})
+    return JsonResponse(
+        {
+            "token": token,
+            "ws_url": settings.CENTRIFUGO_WS_URL,
+            "namespace": settings.CENTRIFUGO_NAMESPACE,
+            "channel": channel,
+        }
     )

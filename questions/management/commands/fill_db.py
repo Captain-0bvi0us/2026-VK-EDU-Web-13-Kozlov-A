@@ -1,10 +1,12 @@
 import random
 import uuid
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils import timezone
 from faker import Faker
 
 from core.models import Profile
@@ -96,6 +98,13 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Готово."))
 
+    def _random_dt(self, rng: random.Random, *, max_days: int) -> timezone.datetime:
+        return timezone.now() - timedelta(
+            days=rng.randint(0, max(0, max_days - 1)),
+            hours=rng.randint(0, 23),
+            minutes=rng.randint(0, 59),
+        )
+
     def _fill_tags(self, fake: Faker, run_id: str, n_tags: int) -> list[int]:
         tag_pks = []
         for i in range(0, n_tags, BATCH):
@@ -153,6 +162,7 @@ class Command(BaseCommand):
                     author_id=rng.choice(user_pks),
                     title=fake.sentence(nb_words=6)[:250],
                     text="\n\n".join(fake.paragraphs(nb=3)),
+                    created_at=self._random_dt(rng, max_days=90),
                 )
                 for _ in range(min(BATCH, n_questions - i))
             ]
@@ -195,6 +205,7 @@ class Command(BaseCommand):
                     author_id=rng.choice(user_pks),
                     text=fake.text(max_nb_chars=1500),
                     is_correct=False,
+                    created_at=self._random_dt(rng, max_days=7),
                 )
                 for _ in range(min(BATCH, n_answers - i))
             ]
@@ -217,11 +228,14 @@ class Command(BaseCommand):
             target = max_pairs
         batch = []
         count = 0
+        rng = random.Random(42)
         for u in user_pks:
             for e in entity_pks:
                 if count >= target:
                     break
-                batch.append(row_fn(u, e))
+                like = row_fn(u, e)
+                like.created_at = self._random_dt(rng, max_days=7)
+                batch.append(like)
                 count += 1
                 if len(batch) >= BATCH:
                     with transaction.atomic():

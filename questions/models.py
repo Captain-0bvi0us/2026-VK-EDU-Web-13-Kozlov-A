@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.db import models
+from django.contrib.postgres.search import SearchVectorField
+from django.db import connection, models
 from django.db.models import Count, IntegerField, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
@@ -93,6 +94,8 @@ class Question(models.Model):
         blank=True,
         verbose_name="теги",
     )
+    # ДЗ6: полнотекстовый индекс PostgreSQL по title + text
+    search_vector = SearchVectorField(null=True, blank=True, editable=False)
 
     objects = QuestionManager()
 
@@ -106,6 +109,18 @@ class Question(models.Model):
 
     def get_absolute_url(self) -> str:
         return reverse("question_detail", kwargs={"pk": self.pk})
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if connection.vendor == "postgresql":
+            from django.contrib.postgres.search import SearchVector
+
+            type(self).objects.filter(pk=self.pk).update(
+                search_vector=(
+                    SearchVector("title", weight="A", config="russian")
+                    + SearchVector("text", weight="B", config="russian")
+                )
+            )
 
     @property
     def created_display(self) -> str:

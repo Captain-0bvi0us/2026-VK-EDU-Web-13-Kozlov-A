@@ -1,45 +1,58 @@
-from django.contrib.auth import get_user_model
-from django.db.models import Count, F
+from __future__ import annotations
 
-from questions.models import Tag
+import logging
 
-User = get_user_model()
+from django.core.cache import cache
 
-POPULAR_TAGS_LIMIT = 8
-BEST_MEMBERS_LIMIT = 5
+from . import cache_keys
+from .tasks import _compute_best_members, _compute_popular_tags
+
+logger = logging.getLogger(__name__)
+
 
 _TAG_SIZES = ("lg", "md", "md", "sm", "sm", "accent", "warm", "sm")
 
 
-def popular_tags_for_sidebar():
-    qs = (
-        Tag.objects.annotate(_n=Count("questions", distinct=True))
-        .filter(_n__gt=0)
-        .order_by("-_n", "name")[:POPULAR_TAGS_LIMIT]
-    )
+def _decorate_tags(items: list[dict]) -> list[dict]:
     out = []
-    for i, tag in enumerate(qs):
+    for i, t in enumerate(items):
         size = _TAG_SIZES[i] if i < len(_TAG_SIZES) else "sm"
-        out.append({"name": tag.name, "slug": tag.slug, "size": size})
+        out.append({**t, "size": size})
     return out
 
 
-def best_members_for_sidebar():
-    qs = (
-        User.objects.select_related("profile")
-        .annotate(
-            _q=Count("questions", distinct=True),
-            _a=Count("answers", distinct=True),
-        )
-        .annotate(activity=F("_q") + F("_a"))
-        .filter(activity__gt=0)
-        .order_by("-activity", "username")[:BEST_MEMBERS_LIMIT]
-    )
-    return list(qs)
+def get_popular_tags() -> list[dict]:
+    try:
+        cached = cache.get(cache_keys.POPULAR_TAGS)
+    except Exception:  # noqa: BLE001
+        cached = None
+    if cached is not None:
+        return _decorate_tags(cached)
+    data = _compute_popular_tags()
+    try:
+        cache.set(cache_keys.POPULAR_TAGS, data, timeout=cache_keys.SIDEBAR_TIMEOUT)
+    except Exception:  # noqa: BLE001
+        logger.warning("popular_tags: не удалось записать кэш", exc_info=True)
+    return _decorate_tags(data)
+
+
+def get_best_members() -> list[dict]:
+    try:
+        cached = cache.get(cache_keys.BEST_MEMBERS)
+    except Exception:  # noqa: BLE001
+        cached = None
+    if cached is not None:
+        return cached
+    data = _compute_best_members()
+    try:
+        cache.set(cache_keys.BEST_MEMBERS, data, timeout=cache_keys.SIDEBAR_TIMEOUT)
+    except Exception:  # noqa: BLE001
+        logger.warning("best_members: не удалось записать кэш", exc_info=True)
+    return data
 
 
 def sidebar_context(request):
     return {
-        "popular_tags": popular_tags_for_sidebar(),
-        "best_members": best_members_for_sidebar(),
+        "popular_tags": get_popular_tags(),
+        "best_members": get_best_members(),
     }

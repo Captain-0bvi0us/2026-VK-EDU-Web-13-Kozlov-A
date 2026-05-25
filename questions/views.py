@@ -1,24 +1,19 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
-from django.db.models import Sum, Value
+from django.db import connection
+from django.db.models import Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
+
+from core.tasks import send_new_answer_email
 
 from .forms import AnswerForm, QuestionForm
 from .like_annotations import annotate_viewer_answer_likes, annotate_viewer_question_likes
 from .models import Answer, AnswerLike, Question, QuestionLike, Tag, VoteSign
-from .presentation import paginate, render_paginated_question_list
-
-
-def _page_index_for_answer(answer_qs, answer_pk: int, per_page: int) -> int:
-    ids = list(answer_qs.values_list("pk", flat=True))
-    try:
-        idx = ids.index(answer_pk)
-    except ValueError:
-        return 1
-    return idx // per_page + 1
+from .presentation import page_index_for_answer, paginate, render_paginated_question_list
+from .tasks import publish_new_answer
 
 
 def _vote_score_and_user_vote(*, model, object_kw, user):
@@ -98,7 +93,9 @@ def question_detail(request, pk):
         )
         if form.is_valid():
             answer = form.save()
-            page_num = _page_index_for_answer(
+            publish_new_answer.delay(question.pk, answer.pk)
+            send_new_answer_email.delay(question.pk, answer.pk)
+            page_num = page_index_for_answer(
                 answer_qs, answer.pk, per_page=per_page
             )
             url = (
@@ -229,6 +226,65 @@ def mark_answer_correct(request, pk):
             "question_id": question.pk,
         }
     )
+
+
+@require_GET
+def search_suggest(request):
+    q = (request.GET.get("q") or "").strip()
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+
+    limit = 8
+
+    if connection.vendor == "postgresql":
+        from django.contrib.postgres.search import (
+            SearchHeadline,
+            SearchQuery,
+            SearchRank,
+        )
+
+        sq = SearchQuery(q, config="russian", search_type="websearch")
+        qs = (
+            Question.objects.annotate(rank=SearchRank("search_vector", sq))
+            .filter(search_vector=sq)
+            .annotate(
+                headline=SearchHeadline(
+                    "title",
+                    sq,
+                    config="russian",
+                    start_sel="<mark>",
+                    stop_sel="</mark>",
+                )
+            )
+            .order_by("-rank", "-created_at")[:limit]
+            .values("id", "title", "headline")
+        )
+        results = [
+            {
+                "id": r["id"],
+                "title": r["title"],
+                "title_highlighted": r["headline"] or r["title"],
+                "url": f"/question/{r['id']}/",
+            }
+            for r in qs
+        ]
+    else:
+        qs = (
+            Question.objects.filter(Q(title__icontains=q) | Q(text__icontains=q))
+            .order_by("-created_at")[:limit]
+            .values("id", "title")
+        )
+        results = [
+            {
+                "id": r["id"],
+                "title": r["title"],
+                "title_highlighted": r["title"],
+                "url": f"/question/{r['id']}/",
+            }
+            for r in qs
+        ]
+
+    return JsonResponse({"results": results})
 
 
 @login_required
