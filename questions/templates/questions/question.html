@@ -1,0 +1,151 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load avatar_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div id="question-page"
+       data-question-id="{{ question.pk }}"
+       data-current-page="{{ page.number }}"
+       data-per-page="{{ page.paginator.per_page }}"
+       data-answer-count="{{ page.paginator.count }}"
+       data-current-username="{% if user.is_authenticated %}{{ user.username }}{% endif %}"
+       data-is-question-author="{% if user.is_authenticated and user.id == question.author_id %}1{% else %}0{% endif %}">
+  <article class="question-card mb-4">
+    <div class="row g-3">
+      <div class="col-auto d-flex flex-column align-items-center gap-2">
+        <img src="{% user_avatar_src question.author %}" class="rounded-3 cq-avatar" width="56" height="56" alt="{{ question.author_display }}">
+        <div class="vote-box {% if question.viewer_vote == 1 %}is-up{% elif question.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за вопрос">
+          {% if user.is_authenticated %}
+            {% if question.author_id == user.id %}
+              <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой вопрос" aria-label="Лайк">▲</button>
+              <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Дизлайк">▼</button>
+            {% else %}
+              <button type="button" class="btn-vote btn-vote-up js-vote-question-up" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == 1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+              <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down js-vote-question-down" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == -1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
+            {% endif %}
+          {% else %}
+            <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+            <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Дизлайк">▼</button>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col">
+        <h1 class="h4 page-title mb-2">{{ question.title }}</h1>
+        <p class="mb-2">{{ question.text }}</p>
+        <div class="question-meta mb-2">
+          <span>Спросил <strong>{{ question.author_display }}</strong></span>
+          <span>·</span>
+          <time datetime="{{ question.created_at|date:'c' }}">{{ question.created_display }}</time>
+        </div>
+        <div>
+          {% for tg in question.tags.all %}
+            <a href="{{ tg.get_absolute_url }}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <h2 class="h5 page-title mb-3">Ответы</h2>
+
+  <div id="answers-list">
+  {% for answer in page.object_list %}
+    <article id="answer-{{ answer.pk }}" class="question-card mb-3 js-answer-row" data-answer-id="{{ answer.pk }}">
+      <div class="row g-3">
+        <div class="col-auto d-flex flex-column align-items-center gap-2">
+          <img src="{% user_avatar_src answer.author %}" class="rounded-3 cq-avatar" width="48" height="48" alt="{{ answer.author_display }}">
+          <div class="vote-box {% if answer.viewer_vote == 1 %}is-up{% elif answer.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование за ответ">
+            {% if user.is_authenticated %}
+              {% if answer.author_id == user.id %}
+                <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой ответ" aria-label="Лайк">▲</button>
+                <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+                <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой ответ" aria-label="Дизлайк">▼</button>
+              {% else %}
+                <button type="button" class="btn-vote btn-vote-up js-vote-answer-up" data-post-url="{% url 'answer_vote' answer.pk %}" {% if answer.viewer_vote == 1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+                <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+                <button type="button" class="btn-vote btn-vote-down js-vote-answer-down" data-post-url="{% url 'answer_vote' answer.pk %}" {% if answer.viewer_vote == -1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
+              {% endif %}
+            {% else %}
+              <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+              <span class="score {% if answer.score < 0 %}text-danger{% endif %}">{{ answer.score }}</span>
+              <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Дизлайк">▼</button>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col">
+          <p class="mb-2">{{ answer.text }}</p>
+          <div class="answer-meta mb-2">
+            <span>Ответил <strong>{{ answer.author_display }}</strong></span>
+            <span>·</span>
+            <span>{{ answer.created_display }}</span>
+          </div>
+          <div class="form-check js-correct-wrap">
+            {% if answer.is_correct %}
+              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" checked disabled>
+              <label class="form-check-label small fw-semibold text-success" for="correct-{{ answer.id }}">Правильный ответ</label>
+            {% elif user.is_authenticated and user.id == question.author_id %}
+              <button type="button" class="btn btn-link btn-sm text-start p-0 text-decoration-none js-mark-correct" data-post-url="{% url 'mark_answer_correct' answer.pk %}">Отметить как правильный</button>
+            {% else %}
+              <input class="form-check-input" type="checkbox" id="correct-{{ answer.id }}" disabled>
+              <label class="form-check-label small text-muted" for="correct-{{ answer.id }}">
+                {% if user.is_authenticated %}
+                  Только автор вопроса может отметить правильный ответ
+                {% else %}
+                  Войдите, чтобы видеть действия с ответами
+                {% endif %}
+              </label>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="text-secondary mb-4 js-no-answers">Пока нет ни одного ответа к этому вопросу.</p>
+  {% endfor %}
+  </div>
+
+  {% include "core/includes/pagination.html" with page=page %}
+
+  <section class="form-section mt-4">
+    <h2 class="h5 page-title mb-3">Ваш ответ</h2>
+    {% if user.is_authenticated %}
+      <form action="{{ question.get_absolute_url }}" method="post" novalidate>
+        {% csrf_token %}
+        {% if answer_form.non_field_errors %}
+          <div class="alert alert-danger">{% for e in answer_form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ answer_form.text.id_for_label }}">{{ answer_form.text.label }}</label>
+          {{ answer_form.text }}
+          {% if answer_form.text.errors %}
+            <div class="invalid-feedback d-block">{{ answer_form.text.errors|join:" " }}</div>
+          {% endif %}
+          <div class="form-text">Будьте вежливы и по делу.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить ответ</button>
+      </form>
+    {% else %}
+      <p class="text-secondary small mb-3">Чтобы ответить, <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a>.</p>
+      <div class="mb-3">
+        <label class="form-label">Текст ответа</label>
+        <textarea class="form-control" rows="5" disabled title="Войдите, чтобы написать ответ" placeholder="Доступно после входа…"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary" disabled title="Войдите, чтобы отправить ответ">Отправить ответ</button>
+    {% endif %}
+  </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    window.CupOfQ = window.CupOfQ || {};
+    window.CupOfQ.placeholderAvatar = "{% static 'core/img/avatar-placeholder.svg' %}";
+  </script>
+  <script src="https://unpkg.com/centrifuge@5.3.4/dist/centrifuge.js"></script>
+  <script src="{% static 'core/js/question_realtime.js' %}" defer></script>
+{% endblock %}

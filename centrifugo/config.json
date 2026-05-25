@@ -1,0 +1,18 @@
+{
+  "admin": true,
+  "admin_password": "admin",
+  "admin_secret": "admin-secret-change-me",
+  "api_insecure": false,
+  "client_anonymous": true,
+  "namespaces": [
+    {
+      "name": "questions",
+      "presence": false,
+      "history_size": 0,
+      "history_ttl": "0s",
+      "allow_subscribe_for_client": true,
+      "allow_subscribe_for_anonymous": true
+    }
+  ],
+  "allowed_origins": ["*"]
+}

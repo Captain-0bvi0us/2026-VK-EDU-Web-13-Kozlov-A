@@ -1,0 +1,77 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load avatar_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-3">Настройки: {{ profile_user_display }}</h1>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-warning" role="alert">
+      {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form id="profile-edit-form" class="form-section" action="{% url 'profile' %}" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="mb-4">
+      <p class="form-label mb-2">Текущий аватар</p>
+      <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-3">
+        <div class="flex-shrink-0 text-center text-sm-start">
+            <img class="avatar-preview d-block mx-auto mx-sm-0 rounded-1" src="{% user_avatar_src user %}" width="120" height="120" alt="Превью аватара">
+        </div>
+        {% if user.profile.avatar %}
+          <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center align-items-sm-start gap-2 pt-sm-1">
+            {{ form.remove_avatar }}
+            <button type="button" class="btn btn-outline-danger btn-sm profile-remove-avatar-btn px-3" aria-label="Удалить текущий аватар с сохранением формы">
+              Удалить аватар
+            </button>
+            {% if form.remove_avatar.errors %}
+              <div class="invalid-feedback d-block">{{ form.remove_avatar.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    {% for field in form %}
+      {% if field.name != 'remove_avatar' %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+          {% if field.errors %}
+            <div class="invalid-feedback d-block">{{ field.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+    <div class="mb-3">
+      <label class="form-label">Логин</label>
+      <input type="text" class="form-control" value="{{ user.username }}" readonly aria-describedby="prof-login-help">
+      <div id="prof-login-help" class="form-text">Логин нельзя изменить через эту форму.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  {% if user.profile.avatar %}
+    <script>
+      (function () {
+        var form = document.getElementById('profile-edit-form');
+        var btn = form && form.querySelector('.profile-remove-avatar-btn');
+        var cb = form && form.querySelector('input[name="remove_avatar"]');
+        if (!form || !btn || !cb) return;
+        btn.addEventListener('click', function () {
+          cb.checked = true;
+          if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+          } else {
+            form.submit();
+          }
+        });
+      })();
+    </script>
+  {% endif %}
+{% endblock %}

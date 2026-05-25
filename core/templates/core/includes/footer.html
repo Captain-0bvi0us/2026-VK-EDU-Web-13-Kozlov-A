@@ -1,0 +1,10 @@
+<footer class="site-footer py-3 mt-4">
+  <div class="container small d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+    <span>© CupOfQ, уютные ответы на любые вопросы</span>
+    {% if request.resolver_match.url_name == "layout" %}
+      <a href="{% url 'index' %}">На главную</a>
+    {% else %}
+      <a href="{% url 'layout' %}">Базовый шаблон</a>
+    {% endif %}
+  </div>
+</footer>
