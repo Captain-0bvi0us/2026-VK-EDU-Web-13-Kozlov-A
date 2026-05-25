@@ -38,3 +38,6 @@ requests==2.32.3
 
 #JWT для connection-token Centrifugo
 PyJWT==2.9.0
+
+#WSGI-сервер
+gunicorn==23.0.0
