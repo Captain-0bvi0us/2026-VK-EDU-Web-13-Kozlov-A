@@ -1,0 +1,28 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <h1 class="page-title h2 mb-4">Новый вопрос</h1>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form class="form-section" action="{% url 'ask' %}" method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3{% if field.name == 'tags_input' %} mb-4{% endif %}">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+        {% if field.errors %}
+          <div class="invalid-feedback d-block">{{ field.errors|join:" " }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-ask">Опубликовать вопрос</button>
+  </form>
+{% endblock %}

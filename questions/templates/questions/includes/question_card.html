@@ -1,0 +1,40 @@
+{% load static %}
+{% load avatar_tags %}
+<article class="question-card">
+  <div class="row g-3">
+    <div class="col-auto d-flex flex-column align-items-center gap-2">
+      <img src="{% user_avatar_src question.author %}" class="rounded-3 cq-avatar" width="48" height="48" alt="{{ question.author_display }}">
+      <div class="vote-box {% if question.viewer_vote == 1 %}is-up{% elif question.viewer_vote == -1 %}is-down{% endif %}" role="group" aria-label="Голосование">
+        {% if user.is_authenticated %}
+          {% if question.author_id == user.id %}
+            <button type="button" class="btn-vote btn-vote-up" disabled title="Нельзя голосовать за свой вопрос" aria-label="Лайк">▲</button>
+            <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down" disabled title="Нельзя голосовать за свой вопрос" aria-label="Дизлайк">▼</button>
+          {% else %}
+            <button type="button" class="btn-vote btn-vote-up js-vote-question-up" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == 1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Лайк">▲</button>
+            <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+            <button type="button" class="btn-vote btn-vote-down js-vote-question-down" data-post-url="{% url 'question_vote' question.pk %}" {% if question.viewer_vote == -1 %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %} aria-label="Дизлайк">▼</button>
+          {% endif %}
+        {% else %}
+          <button type="button" class="btn-vote btn-vote-up" disabled title="Войдите, чтобы голосовать" aria-label="Лайк">▲</button>
+          <span class="score {% if question.score < 0 %}text-danger{% endif %}">{{ question.score }}</span>
+          <button type="button" class="btn-vote btn-vote-down" disabled title="Войдите, чтобы голосовать" aria-label="Дизлайк">▼</button>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col">
+      <a class="q-title d-block mb-1" href="{{ question.get_absolute_url }}">{{ question.title }}</a>
+      <p class="mb-2 small">{{ question.text }}</p>
+      <div class="d-flex flex-wrap align-items-center gap-2 question-meta">
+        <a href="{{ question.get_absolute_url }}">Ответов: {{ question.answer_count }}</a>
+        <span>·</span>
+        <span>{{ question.created_display }}</span>
+      </div>
+      <div class="mt-2">
+        {% for tg in question.tags.all %}
+          <a href="{{ tg.get_absolute_url }}" class="badge text-bg-light border text-decoration-none">{{ tg.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</article>
